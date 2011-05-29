@@ -1,0 +1,9 @@
+name = MailChimp campaign
+description = Create and send MailChimp campaign from nodes.
+package = MailChimp
+core = 7.x
+
+dependencies[] = mailchimp
+
+files[] = mailchimp_campaign.install
+files[] = mailchimp_campaign.module
