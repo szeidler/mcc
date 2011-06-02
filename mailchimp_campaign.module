@@ -81,19 +81,60 @@ function mailchimp_campaign_operationsform($form, &$form_state) {
   $form['mailchimp_campaign']['create'] = array(
     '#type' => 'submit',
     '#value' => t('Create campaign from node'),
-    '#submit' => array('mailchimp_campaign_create'),
+    '#submit' => array('mailchimp_campaign_operationsform_create'),
   );
   return $form;
 }
 
 /**
- * Create MailChimp campaign from a node.
+ * Create MailChimp campaign on form submission.
  */
-function mailchimp_campaign_create($form, $form_state) {
-dpm($form_state);
+function mailchimp_campaign_operationsform_create($form, $form_state) {
   if (isset($form_state['build_info']['args'][0]->nid)) {
     $node = $form_state['build_info']['args'][0];
-    $mcapi = _mailchimp_get_api_object();
-    dpm($mcapi);
+    mailchimp_campaign_create($node);
+  }
+}
+
+/**
+ * Create MailChimp campaign from a node.
+ */
+function mailchimp_campaign_create($node, $options = array()) {
+  $mcapi = _mailchimp_get_api_object();
+  $type = 'regular';
+  $options = array(
+    'list_id' => variable_get('mailchimp_campaign_list_' . $node->type, FALSE),
+    'subject' => check_plain($node->title),
+    'from_email' => 'juhasz.as@gmail.com',
+    'from_name' => 'From Name',
+    'title' => check_plain($node->title),
+    'template_id' => '194517',
+  );
+  $content = array(
+    'html_main' => $node->body['und'][0]['safe_value'],
+    'text' => 'plain',
+  );
+
+  $cid = $mcapi->campaignCreate($type, $options, $content);
+
+  if ($mcapi->errorCode) {
+    $message = t("MailChimp error. The campaign was not created. MailChimp error code: <em>!errorCode</em>, MailChimp error message: <em>!errorMessage</em>.", array('!errorCode' => $mcapi->errorCode, '!errorMessage' => $mcapi->errorMessage));
+
+    drupal_set_message($message, 'error');
+    watchdog('mailchimp_campaign', $message, array(), WATCHDOG_ERROR);
+  }
+  else {
+    $record = array(
+      'nid' => $node->nid,
+      'vid' => $node->vid,
+      'cid' => $cid,
+      'sent' => 0,
+    );
+    drupal_write_record('mailchimp_campaign_campaigns', $record);
+
+    $message = t('MailChimp campaign was created, campaign ID: <em>!cid</em>.', array('!cid' => $cid));
+
+    drupal_set_message($message);
+    watchdog('mailchimp_campaign', $message);
   }
 }
