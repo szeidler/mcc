@@ -1,0 +1,87 @@
+<?php
+
+/**
+ * Implements hook_permission()
+ */
+function mailchimp_campaign_permission() {
+  return array(
+    'administer mailchimp campaign' =>  array(
+      'title' => t('Administer MailChimp campaigns'),
+      'description' => t('Administer MailChimp campaigns for node types.'),
+    ),
+    'send mailchimp campaign' => array(
+      'title' => t('Send MailChimp campaigns'),
+      'description' => t('Create and send MailChiimp campaigns form nodes.'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function mailchimp_campaign_form_node_type_form_alter(&$form, $form_state) {
+  if (isset($form['type'])) {
+
+    $form['mailchimp_campaign'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('MailChimp campaign'),
+      '#group' => 'additional_settings',
+    );
+    $form['mailchimp_campaign']['mailchimp_campaign_enabled'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Enable MailChimp campaigns'),
+      '#default_value' => variable_get('mailchimp_campaign_enabled_' . $form['#node_type']->type, FALSE),
+    );
+    $form['mailchimp_campaign']['mailchimp_campaign_list'] = array(
+      '#type' => 'select',
+      '#title' => t('Lists'),
+      '#default_value' => variable_get('mailchimp_campaign_list_' . $form['#node_type']->type, FALSE),
+      '#options' => _mailchimp_campaign_lists_options(),
+    );
+  }
+}
+
+/**
+ * Returns an array of mailing lists, for option values.
+ */
+function _mailchimp_campaign_lists_options() {
+  $lists_variable = variable_get('mailchimp_lists', array());
+
+  $lists = array();
+  foreach ($lists_variable as $list) {
+    $lists[$list->id] = $list->name;
+  }
+
+  return $lists;
+}
+
+/**
+ * Implements hook_node_view().
+ */
+function mailchimp_campaign_node_view($node, $view_mode, $langcode) {
+  if ($view_mode == 'full') {
+    $campaign_enabled = variable_get('mailchimp_campaign_enabled_' . $node->type, FALSE);
+    if ($campaign_enabled) {
+      $node->content['mailchimp'] = array(
+        drupal_get_form('mailchimp_campaign_operationsform', $node),
+      );
+    }
+  }
+}
+
+/**
+ * Form for create and send MailChimp campaign, from node content.
+ */
+function mailchimp_campaign_operationsform($form, &$form_state) {
+  $form['mailchimp_campaign'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('MailChimp camaign'),
+    '#collapsible' => TRUE,
+  );
+  $form['mailchimp_campaign']['create'] = array(
+    '#type' => 'submit',
+    '#value' => t('Create campaign from node'),
+    '#submit' => array('mailchimp_campaign_create'),
+  );
+  return $form;
+}
