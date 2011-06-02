@@ -1,0 +1,42 @@
+<?php
+
+/**
+ * Implements hook_schema().
+ */
+function mailchimp_campaign_schema() {
+  $schema['mailchimp_campaign_campaigns'] = array(
+    'description' => 'MailChimp campaigns, created from nodes.',
+    'fields' => array(
+      'nid' => array(
+        'description' => 'Node ID.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'vid' => array(
+        'description' => 'Node version ID.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'cid' => array(
+        'description' => 'MailChimp campaign ID.',
+        'type' => 'varchar', 'length' => 16,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'sent' => array(
+        'description' => 'MailChimp campaign status.',
+        'type' => 'int',
+        'length' => 1,
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('cid'),
+  );
+  return $schema;
+}
