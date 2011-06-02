@@ -85,3 +85,15 @@ function mailchimp_campaign_operationsform($form, &$form_state) {
   );
   return $form;
 }
+
+/**
+ * Create MailChimp campaign from a node.
+ */
+function mailchimp_campaign_create($form, $form_state) {
+dpm($form_state);
+  if (isset($form_state['build_info']['args'][0]->nid)) {
+    $node = $form_state['build_info']['args'][0];
+    $mcapi = _mailchimp_get_api_object();
+    dpm($mcapi);
+  }
+}
