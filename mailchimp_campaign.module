@@ -112,18 +112,21 @@ function mailchimp_campaign_create($node, $options = array()) {
   );
   $content = array(
     'html_main' => $node->body['und'][0]['safe_value'],
-    'text' => 'plain',
+    'text' => 'plain', // TODO
   );
 
   $cid = $mcapi->campaignCreate($type, $options, $content);
 
+  // Create campaign on MailChimp.
   if ($mcapi->errorCode) {
+    // Display and log error, if any.
     $message = t("MailChimp error. The campaign was not created. MailChimp error code: <em>!errorCode</em>, MailChimp error message: <em>!errorMessage</em>.", array('!errorCode' => $mcapi->errorCode, '!errorMessage' => $mcapi->errorMessage));
 
     drupal_set_message($message, 'error');
     watchdog('mailchimp_campaign', $message, array(), WATCHDOG_ERROR);
   }
   else {
+    // Write campaign details to the database.
     $record = array(
       'nid' => $node->nid,
       'vid' => $node->vid,
@@ -132,9 +135,10 @@ function mailchimp_campaign_create($node, $options = array()) {
     );
     drupal_write_record('mailchimp_campaign_campaigns', $record);
 
-    $message = t('MailChimp campaign was created, campaign ID: <em>!cid</em>.', array('!cid' => $cid));
+    $message = t('MailChimp campaign was created, campaign Id: <em>!cid</em>.', array('!cid' => $cid));
 
     drupal_set_message($message);
     watchdog('mailchimp_campaign', $message);
   }
 }
+
