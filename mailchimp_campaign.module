@@ -83,6 +83,11 @@ function mailchimp_campaign_operationsform($form, &$form_state) {
     '#value' => t('Create campaign from node'),
     '#submit' => array('mailchimp_campaign_operationsform_create'),
   );
+  $form['mailchimp_campaign']['send'] = array(
+    '#type' => 'submit',
+    '#value' => t('Send campaign'),
+    '#submit' => array('mailchimp_campaign_operationsform_send'),
+  );
   return $form;
 }
 
@@ -93,6 +98,16 @@ function mailchimp_campaign_operationsform_create($form, $form_state) {
   if (isset($form_state['build_info']['args'][0]->nid)) {
     $node = $form_state['build_info']['args'][0];
     mailchimp_campaign_create($node);
+  }
+}
+
+/**
+ * Send MailChimp campaign on form submission.
+ */
+function mailchimp_campaign_operationform_send($form, $form_state) {
+  if (isset($form_state['build_info']['args'][0]->nid)) {
+    $node = $form_state['build_info']['args'][0];
+    mailchimp_campaign_send($node);
   }
 }
 
@@ -142,3 +157,56 @@ function mailchimp_campaign_create($node, $options = array()) {
   }
 }
 
+/**
+ * Send MailChimp campaign.
+ */
+function mailchimp_campaign_send($cid) {
+  $mcapi = _mailchimp_get_api_object();
+
+  // Send campaign.
+  $sent = $mcapi->campaignSendNow();
+
+  if ($mcapi->errorCode) {
+    // Display and log error, if any.
+    $message = t('MailChimp error. The campaign was not sent (Campaign Id: <em>!cid</em>). MailChimp error code: <em>!errorCode</em>, MailChimp error message: <em>!errorMessage</em>.', array('!cid' => $cid, '!errorCode' => $mcapi->errorCode, '!errorMessage' => $mcapi->errorMessage));
+
+    drupal_set_message($message, 'error');
+    watchdog('mailchimp_campaign', $message, array(), WATCHDOG_ERROR);
+  }
+  else {
+    // Update campaign details in the database.
+    $record = array(
+      'cid' => $cid,
+      'sent' => 1,
+    );
+
+    drupal_write_record('mailchimp_campaign_campaigns', $record, 'cid');
+
+    $campaign_admin_link = _mailchimp_campaign_campaign_admin_url($cid);
+    $message = t('MailChimp campaign was sent, campaign Id: <em>!cid</em>.', array('!cid' => $campaign_admin_link));
+
+    drupal_set_message($message);
+    watchdog('mailchimp_campaign', $message);
+  }
+}
+
+/**
+ * Get url to MaliChimp admin pages.
+ */
+function _mailchimp_campaign_admin_url() {
+  $key = variable_get('mailchimp_api_key', FALSE);
+  $url = FALSE;
+  if ($key) {
+    $dc = explode('-', $key, 2);
+    $url = 'https://' . $dc[1] . '.admin.mailchimp.com/';
+  }
+
+  return $url;
+}
+
+/**
+ * Get url to a campaign admin page.
+ */
+function _mailchimp_campaign_campaign_admin_url($cid) {
+  return l($cid, _mailchimp_campaign_admin_url() . 'campaigns/show?id=' . $cid);
+}
