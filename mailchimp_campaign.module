@@ -146,7 +146,7 @@ function mailchimp_campaign_create($node, $options = array()) {
   // Create campaign on MailChimp.
   if ($mcapi->errorCode) {
     // Display and log error, if any.
-    $message = t('MailChimp error. The campaign was not created. MailChimp error code: <em>!errorCode</em>, MailChimp error message: <em>!errorMessage</em>.', array('!errorCode' => $mcapi->errorCode, '!errorMessage' => $mcapi->errorMessage));
+    $message = t('MailChimp error. The campaign was not created.') . ' ' . _mailchimp_campaign_mcapi_error_message($mcapi);
 
     drupal_set_message($message, 'error');
     watchdog('mailchimp_campaign', $message, array(), WATCHDOG_ERROR);
@@ -180,7 +180,7 @@ function mailchimp_campaign_send($cid) {
 
   if ($mcapi->errorCode) {
     // Display and log error, if any.
-    $message = t('MailChimp error. The campaign was not sent (Campaign Id: <em>!cid</em>). MailChimp error code: <em>!errorCode</em>, MailChimp error message: <em>!errorMessage</em>.', array('!cid' => $cid, '!errorCode' => $mcapi->errorCode, '!errorMessage' => $mcapi->errorMessage));
+    $message = t('MailChimp error. The campaign was not sent (Campaign Id: <em>!cid</em>).', array('!cid' => $cid)) . ' ' . _mailchimp_campaign_mcapi_error_message($mcapi);
 
     drupal_set_message($message, 'error');
     watchdog('mailchimp_campaign', $message, array(), WATCHDOG_ERROR);
@@ -234,3 +234,9 @@ function _mailchimp_campaign_mailchimp_campaign_admin_link($text, $web_id) {
   return l($text, _mailchimp_campaign_mailchimp_admin_page() . 'campaigns/show?id=' . $web_id);
 }
 
+/**
+ * Returns translatable error message text, with MailChimp error.
+ */
+function _mailchimp_campaign_mcapi_error_message($mcapi) {
+  return t('MailChimp error code: <em>!errorCode</em>, MailChimp error message: <em>!errorMessage</em>.', array('!errorCode' => $mcapi->errorCode, '!errorMessage' => $mcapi->errorMessage));
+}
