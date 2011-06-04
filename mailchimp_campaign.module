@@ -141,9 +141,9 @@ function mailchimp_campaign_create($node, $options = array()) {
     'text' => 'plain', // TODO
   );
 
+  // Create campaign on MailChimp.
   $cid = $mcapi->campaignCreate($type, $options, $content);
 
-  // Create campaign on MailChimp.
   if ($mcapi->errorCode) {
     // Display and log error, if any.
     $message = t('MailChimp error. The campaign was not created.') . ' ' . _mailchimp_campaign_mcapi_error_message($mcapi);
@@ -152,20 +152,35 @@ function mailchimp_campaign_create($node, $options = array()) {
     watchdog('mailchimp_campaign', $message, array(), WATCHDOG_ERROR);
   }
   else {
-    // Write campaign details to the database.
     $record = array(
       'nid' => $node->nid,
       'vid' => $node->vid,
       'cid' => $cid,
-      'sent' => 0,
+      'update_time' => REQUEST_TIME,
     );
+
+    // Request all datas from campaign.
+    $campaign = $mcapi->campaigns(array('campaign_id' => $cid));
+
+    if ($mcapi->errorCode) {
+      // Diplay and log error if any.
+      $message = t('<em>!title</em> campaign was created, but some error has occured. Please visit the <em>!mcadmin</em>!', array('!title' => $options['title'], '!mcadmin' => _mailchimp_campaign_mailchimp_admin_page('campaigns'))) . ' ' . _mailchimp_campaign_mcapi_error_message($mcapi);
+
+      drupal_set_message($message, 'error');
+      watchdog('mailchimp_campaign', $message, array(), WATCHDOG_ERROR);
+    }
+    else {
+      $record['data'] = serialize($campaign[0]);
+
+      $campaign_admin_link = _mailchimp_campaign_mailchimp_campaign_admin_link($campaign[0]['title'], $campaign[0]['web_id']);
+      $message = t('<em>!title</em> campaign was created.', array('!title' => $campaign_admin_link));
+
+      drupal_set_message($message);
+      watchdog('mailchimp_campaign', $message);
+    }
+
+    // Write campaign details to the database.
     drupal_write_record('mailchimp_campaign_campaigns', $record);
-
-    $campaign_admin_link = _mailchimp_campaign_campaign_admin_url($cid);
-    $message = t('MailChimp campaign was created, campaign Id: <em>!cid</em>.', array('!cid' => $campaign_admin_link));
-
-    drupal_set_message($message);
-    watchdog('mailchimp_campaign', $message);
   }
 }
 

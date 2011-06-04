@@ -27,11 +27,15 @@ function mailchimp_campaign_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
-      'sent' => array(
-        'description' => 'MailChimp campaign status.',
+      'data' => array(
+        'description' => 'MailChimp campaign datas.',
+        'type' => 'text',
+        'size' => 'normal',
+        'not null' => FALSE,
+      ),
+      'update_time' => array(
+        'description' => 'Unix timestamp, when the campaign datas where last updated from MailChimp servers.',
         'type' => 'int',
-        'length' => 1,
-        'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
       ),
