@@ -203,22 +203,34 @@ function mailchimp_campaign_send($cid) {
 }
 
 /**
- * Get url to MaliChimp admin pages.
+ * Get url or link to MaliChimp admin pages.
  */
-function _mailchimp_campaign_admin_url() {
+function _mailchimp_campaign_mailchimp_admin_page($type = 'url') {
   $key = variable_get('mailchimp_api_key', FALSE);
-  $url = FALSE;
   if ($key) {
     $dc = explode('-', $key, 2);
     $url = 'https://' . $dc[1] . '.admin.mailchimp.com/';
+
+    switch ($type) {
+      case 'admin':
+          return l(t('MailChimp admin page'), $url);
+        break;
+      case 'campaigns':
+          return l(t('MailChimp campaigns admin page'), $url . 'campaigns/');
+        break;
+      case 'url':
+        return $url;
+        break;
+    }
   }
 
-  return $url;
+  return FALSE;
 }
 
 /**
- * Get url to a campaign admin page.
+ * Get link to a campaign admin page.
  */
-function _mailchimp_campaign_campaign_admin_url($cid) {
-  return l($cid, _mailchimp_campaign_admin_url() . 'campaigns/show?id=' . $cid);
+function _mailchimp_campaign_mailchimp_campaign_admin_link($text, $web_id) {
+  return l($text, _mailchimp_campaign_mailchimp_admin_page() . 'campaigns/show?id=' . $web_id);
 }
+
