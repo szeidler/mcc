@@ -143,10 +143,11 @@ function theme_mailchimp_campaign_mclinks($variables) {
 
   $items = array();
   $items[] = _mailchimp_campaign_mailchimp_admin_link(t('Edit'), 'campaigns/show', $data['web_id']);
-  $items[] = l('Web archive page', $data['archive_url']);
-  if (in_array($data['status'], array('schedule', 'sending', 'sent'))) {
+  $items[] = l('Web archive page', $data['archive_url'], array('attributes' => array('target' => '_blank')));
+  if (in_array($data['status'], array('sending', 'sent'))) {
     $items[] = _mailchimp_campaign_mailchimp_admin_link(t('Reports'), 'reprots/summary', $data['web_id']);
   }
+
   return theme('item_list', array('items' => $items));
 }
 
@@ -238,7 +239,7 @@ function mailchimp_campaign_create($node, $options = array()) {
       $record['data'] = serialize($campaign[0]);
 
       $mcadmin_page = _mailchimp_campaign_mailchimp_admin_link(t('MailChimp campaign edit page'), 'campaigns/show', $campaign[0]['web_id']);
-      $web_archive = l('Web archive page', $campaign[0]['archive_url']);
+      $web_archive = l('Web archive page', $campaign[0]['archive_url'], array('attributes' => array('target' => '_blank')));
       $message = t('<em>!title</em> campaign was created: <em>!mcadmin_page</em>, <em>!web_archive</em>.', array('!title' => $campaign[0]['title'], '!mcadmin_page' => $mcadmin_page, '!web_archive' => $web_archive));
 
       drupal_set_message($message);
@@ -303,7 +304,7 @@ function _mailchimp_campaign_mailchimp_admin_link($text = '', $path = '', $web_i
       return $url;
     }
     elseif ($text) {
-      return l($text, $url, array('target' => '_blank'));
+      return l($text, $url, array('attributes' => array('target' => '_blank')));
     }
   }
 
