@@ -18,6 +18,7 @@ function mailchimp_campaign_permission() {
 
 /**
  * Implements hook_form_FORM_ID_alter().
+ * Put MailChimp campaign module setting to the node type edit form.
  */
 function mailchimp_campaign_form_node_type_form_alter(&$form, $form_state) {
   if (isset($form['type'])) {
@@ -57,6 +58,7 @@ function _mailchimp_campaign_lists_options() {
 
 /**
  * Implements hook_node_view().
+ * Put MailChimp campaign create and send form to the full node view.
  */
 function mailchimp_campaign_node_view($node, $view_mode, $langcode) {
   if ($view_mode == 'full') {
@@ -256,5 +258,6 @@ function _mailchimp_campaign_mailchimp_campaign_admin_link($text, $web_id) {
 function _mailchimp_campaign_mcapi_error_message($mcapi) {
   return t('MailChimp error code: <em>!errorCode</em>, MailChimp error message: <em>!errorMessage</em>.', array('!errorCode' => $mcapi->errorCode, '!errorMessage' => $mcapi->errorMessage));
 }
+
 
 
