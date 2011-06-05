@@ -160,7 +160,7 @@ function mailchimp_campaign_create($node, $options = array()) {
 
     if ($mcapi->errorCode) {
       // Diplay and log error if any.
-      $message = t('<em>!title</em> campaign was created, but some error has occured. Please visit the <em>!mcadmin</em>!', array('!title' => $options['title'], '!mcadmin' => _mailchimp_campaign_mailchimp_admin_page('campaigns'))) . ' ' . _mailchimp_campaign_mcapi_error_message($mcapi);
+      $message = t('<em>!title</em> campaign was created, but some error has occured. Please visit the <em>!mcadmin</em>!', array('!title' => $options['title'], '!mcadmin' => _mailchimp_campaign_mailchimp_admin_link(t('Campaigns admin page'), 'campaigns/'))) . ' ' . _mailchimp_campaign_mcapi_error_message($mcapi);
 
       drupal_set_message($message, 'error');
       watchdog('mailchimp_campaign', $message, array(), WATCHDOG_ERROR);
@@ -168,7 +168,7 @@ function mailchimp_campaign_create($node, $options = array()) {
     else {
       $record['data'] = serialize($campaign[0]);
 
-      $mcadmin_page = _mailchimp_campaign_mailchimp_campaign_admin_link('MailChimp campaign admin page', $campaign[0]['web_id']);
+      $mcadmin_page = _mailchimp_campaign_mailchimp_admin_link(t('MailChimp campaign edit page'), 'campaigns/show', $campaign[0]['web_id']);
       $web_archive = l('Web archive page', $campaign[0]['archive_url']);
       $message = t('<em>!title</em> campaign was created: <em>!mcadmin_page</em>, <em>!web_archive</em>.', array('!title' => $campaign[0]['title'], '!mcadmin_page' => $mcadmin_page, '!web_archive' => $web_archive));
 
@@ -217,33 +217,28 @@ function mailchimp_campaign_send($cid) {
 /**
  * Get url or link to MaliChimp admin pages.
  */
-function _mailchimp_campaign_mailchimp_admin_page($type = 'url') {
+function _mailchimp_campaign_mailchimp_admin_link($text = '', $path = '', $web_id = '', $return_url = FALSE) {
   $key = variable_get('mailchimp_api_key', FALSE);
   if ($key) {
     $dc = explode('-', $key, 2);
     $url = 'https://' . $dc[1] . '.admin.mailchimp.com/';
 
-    switch ($type) {
-      case 'admin':
-          return l(t('MailChimp admin page'), $url);
-        break;
-      case 'campaigns':
-          return l(t('MailChimp campaigns admin page'), $url . 'campaigns/');
-        break;
-      case 'url':
-        return $url;
-        break;
+    if ($path) {
+      $url .= $path;
+    }
+    if ($web_id) {
+      $url .= '?id=' . $web_id;
+    }
+
+    if ($return_url) {
+      return $url;
+    }
+    elseif ($text) {
+      return l($text, $url, array('target' => '_blank'));
     }
   }
 
   return FALSE;
-}
-
-/**
- * Get link to a campaign admin page.
- */
-function _mailchimp_campaign_mailchimp_campaign_admin_link($text, $web_id) {
-  return l($text, _mailchimp_campaign_mailchimp_admin_page() . 'campaigns/show?id=' . $web_id);
 }
 
 /**
@@ -252,3 +247,4 @@ function _mailchimp_campaign_mailchimp_campaign_admin_link($text, $web_id) {
 function _mailchimp_campaign_mcapi_error_message($mcapi) {
   return t('MailChimp error code: <em>!errorCode</em>, MailChimp error message: <em>!errorMessage</em>.', array('!errorCode' => $mcapi->errorCode, '!errorMessage' => $mcapi->errorMessage));
 }
+
