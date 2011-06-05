@@ -27,6 +27,13 @@ function mailchimp_campaign_menu() {
     'access arguments' => array('send mailchimp campaign'),
     'type' => MENU_CALLBACK,
   );
+  $items['mailchimp-campaign/%cid/send/%'] = array(
+    'title' => 'Send',
+    'page callback' => '_mailchimp_campaign_action_access',
+    'page arguments' => array(1, 3, 'send'),
+    'access arguments' => array('send mailchimp campaign'),
+    'type' => MENU_CALLBACK,
+  );
 
   return $items;
 }
@@ -40,6 +47,9 @@ function mailchimp_campaign_theme($existing, $type, $theme, $path) {
       'variables' => array('node_campaigns' => array()),
     ),
     'mailchimp_campaign_mclinks' => array(
+      'variables' => array('data' => NULL),
+    ),
+    'mailchimp_campaign_actions' => array(
       'variables' => array('data' => NULL),
     ),
   );
@@ -110,7 +120,7 @@ function mailchimp_campaign_node_view($node, $view_mode, $langcode) {
  */
 function theme_mailchimp_campaign_node_campaigns_list($variables) {
   $node_campaigns = $variables['node_campaigns'];
-  $header = array(t('ID'), t('Title'), t('Status'), t('MC links'), t('Last updated'), '');
+  $header = array(t('ID'), t('Title'), t('Status'), t('MC links'), t('Last updated'), t('Actions'));
 
   foreach ($node_campaigns as $cid => $campaign) {
     $row = array();
@@ -125,8 +135,8 @@ function theme_mailchimp_campaign_node_campaigns_list($variables) {
       $row[] = '<em>' . t('No available information, please update.') . '</em>';
       $row[] = '<em>' . t('No available information, please update.') . '</em>';
     }
-    $row[] = format_date($campaign['update_time']); // Last update
-    $row[] = l(t('Update'), 'mailchimp-campaign/' . $cid . '/update/' . drupal_get_token('mailchimp_campaign'));
+    $row[] = format_date($campaign['update_time']); // Last updated
+    $row[] = theme('mailchimp_campaign_actions', array('data' => $campaign['data'])); // Actions
 
     $rows[] = $row;
   }
@@ -144,7 +154,22 @@ function theme_mailchimp_campaign_mclinks($variables) {
   $items[] = _mailchimp_campaign_mailchimp_admin_link(t('Edit'), 'campaigns/show', $data['web_id']);
   $items[] = l('Web archive page', $data['archive_url'], array('attributes' => array('target' => '_blank')));
   if (in_array($data['status'], array('sending', 'sent'))) {
-    $items[] = _mailchimp_campaign_mailchimp_admin_link(t('Reports'), 'reprots/summary', $data['web_id']);
+    $items[] = _mailchimp_campaign_mailchimp_admin_link(t('Reports'), 'reports/summary', $data['web_id']);
+  }
+
+  return theme('item_list', array('items' => $items));
+}
+
+/**
+ * Returns action (update/send) links.
+ */
+function theme_mailchimp_campaign_actions($variables) {
+  $data = $variables['data'];
+
+  $items = array();
+  $items[] = l(t('Update'), 'mailchimp-campaign/' . $data['id'] . '/update/' . drupal_get_token('mailchimp_campaign'));
+  if ($data['status'] == 'save') {
+    $items[] = l(t('Send'), 'mailchimp-campaign/' . $data['id'] . '/send/' . drupal_get_token('mailchimp_campaign'));
   }
 
   return theme('item_list', array('items' => $items));
@@ -215,7 +240,7 @@ function mailchimp_campaign_create($node, $options = array()) {
     $record['vid'] = $node->vid;
     drupal_write_record('mailchimp_campaign_node_campaigns', $record);
 
-    $message = t('Campaign was created! (ID: <em>!cid</em>.', array('!cid' => $cid));
+    $message = t('Campaign was created! (ID: <em>!cid</em>)', array('!cid' => $cid));
 
     drupal_set_message($message);
     watchdog('mailchimp_campaign', $message);
@@ -267,7 +292,7 @@ function mailchimp_campaign_send($cid) {
   $mcapi = _mailchimp_get_api_object();
 
   // Send campaign.
-  $sent = $mcapi->campaignSendNow();
+  $sent = $mcapi->campaignSendNow($cid);
 
   if ($mcapi->errorCode) {
     // Display and log error, if any.
@@ -278,15 +303,9 @@ function mailchimp_campaign_send($cid) {
   }
   else {
     // Update campaign details in the database.
-    $record = array(
-      'cid' => $cid,
-      'sent' => 1,
-    );
+    mailchimp_campaign_update_campaign($cid);
 
-    drupal_write_record('mailchimp_campaign_node_campaigns', $record, 'cid');
-
-    $campaign_admin_link = _mailchimp_campaign_campaign_admin_url($cid);
-    $message = t('MailChimp campaign was sent, campaign Id: <em>!cid</em>.', array('!cid' => $campaign_admin_link));
+    $message = t('MailChimp campaign was sent, campaign Id: <em>!cid</em>.', array('!cid' => $cid));
 
     drupal_set_message($message);
     watchdog('mailchimp_campaign', $message);
@@ -311,6 +330,7 @@ function _mailchimp_campaign_action_access($campaign, $token, $op) {
         mailchimp_campaign_update_campaign($campaign['cid']);
         break;
       case 'send':
+        mailchimp_campaign_send($campaign['cid']);
         break;
     }
   }
