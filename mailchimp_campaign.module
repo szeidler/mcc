@@ -73,10 +73,10 @@ function mailchimp_campaign_form_node_type_form_alter(&$form, $form_state) {
       '#title' => t('Enable MailChimp campaigns'),
       '#default_value' => $defaults ? $defaults['enabled'] : FALSE,
     );
-    $form['mailchimp_campaign']['list'] = array(
+    $form['mailchimp_campaign']['list_id'] = array(
       '#type' => 'select',
       '#title' => t('Lists'),
-      '#default_value' => $defaults ? $defaults['list'] : FALSE,
+      '#default_value' => $defaults ? $defaults['list_id'] : FALSE,
       '#options' => _mailchimp_campaign_lists_options(),
     );
     $form['mailchimp_campaign']['template_id'] = array(
@@ -93,7 +93,7 @@ function mailchimp_campaign_form_node_type_form_alter(&$form, $form_state) {
     $form['mailchimp_campaign']['from_email'] = array(
       '#type' => 'textfield',
       '#title' => t('Default from email'),
-      '#default_value' => $defaults ? $defaults['from_email'] : '',
+      '#default_value' => $defaults ? $defaults['from_email'] : variable_get('site_mail', FALSE),
     );
     $form['#validate'][] = 'mailchimp_campaign_form_node_type_form_validate';
     $form['#submit'][] = 'mailchimp_campaign_form_node_type_form_submit';
@@ -238,16 +238,17 @@ function mailchimp_campaign_create_form_submit($form, $form_state) {
 /**
  * Create MailChimp campaign from a node.
  */
-function mailchimp_campaign_create($node, $options = array()) {
+function mailchimp_campaign_create($node) {
   $mcapi = _mailchimp_get_api_object();
   $type = 'regular';
+  $defaults = variable_get('mailchimp_campaign_node_type_settings_' . $node->type, FALSE);
   $options = array(
-    'list_id' => variable_get('mailchimp_campaign_list_' . $node->type, FALSE),
-    'subject' => check_plain($node->title),
-    'from_email' => 'juhasz.as@gmail.com',
-    'from_name' => 'From Name',
+    'list_id' => $defaults['list_id'],
+    'subject' => check_plain($node->title) . ' - ' . variable_get('site_name', FALSE),
+    'from_email' => $defaults['from_email'],
+    'from_name' => $defaults['from_name'],
     'title' => check_plain($node->title),
-    'template_id' => '194517',
+    'template_id' => $defaults['template_id'],
   );
   $content = array(
     'html_main' => $node->body['und'][0]['safe_value'],
