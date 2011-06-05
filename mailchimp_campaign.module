@@ -75,8 +75,8 @@ function mailchimp_campaign_node_view($node, $view_mode, $langcode) {
         );
       }
 
-      $node->content['mailchimp'] = array(
-        drupal_get_form('mailchimp_campaign_operationsform', $node),
+      $node->content['mailchimp_campaign'][] = array(
+        drupal_get_form('mailchimp_campaign_createform', $node),
       );
     }
   }
@@ -85,21 +85,15 @@ function mailchimp_campaign_node_view($node, $view_mode, $langcode) {
 /**
  * Form for create and send MailChimp campaign, from node content.
  */
-function mailchimp_campaign_operationsform($form, &$form_state) {
-  $form['mailchimp_campaign'] = array(
+function mailchimp_campaign_createform($form, &$form_state) {
+  $form['mailchimp_campaign_create'] = array(
     '#type' => 'fieldset',
-    '#title' => t('MailChimp camaign'),
+    '#title' => t('Create new MailChimp camaign'),
     '#collapsible' => TRUE,
   );
-  $form['mailchimp_campaign']['create'] = array(
+  $form['mailchimp_campaign_create']['create'] = array(
     '#type' => 'submit',
-    '#value' => t('Create campaign from node'),
-    '#submit' => array('mailchimp_campaign_operationsform_create'),
-  );
-  $form['mailchimp_campaign']['send'] = array(
-    '#type' => 'submit',
-    '#value' => t('Send campaign'),
-    '#submit' => array('mailchimp_campaign_operationsform_send'),
+    '#value' => t('Create new campaign from node'),
   );
   return $form;
 }
@@ -107,7 +101,7 @@ function mailchimp_campaign_operationsform($form, &$form_state) {
 /**
  * Create MailChimp campaign on form submission.
  */
-function mailchimp_campaign_operationsform_create($form, $form_state) {
+function mailchimp_campaign_createform_submit($form, $form_state) {
   if (isset($form_state['build_info']['args'][0]->nid)) {
     $node = $form_state['build_info']['args'][0];
     mailchimp_campaign_create($node);
