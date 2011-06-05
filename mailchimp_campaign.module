@@ -100,7 +100,7 @@ function mailchimp_campaign_node_view($node, $view_mode, $langcode) {
       }
 
       $node->content['mailchimp_campaign']['create'] = array(
-        drupal_get_form('mailchimp_campaign_createform', $node),
+        drupal_get_form('mailchimp_campaign_create_form', $node),
       );
     }
   }
@@ -127,7 +127,7 @@ function theme_mailchimp_campaign_node_campaigns_list($variables) {
       $row[] = '<em>' . t('No available information, please update.') . '</em>';
     }
     $row[] = format_date($campaign['update_time']); // Last update
-    $row[] = 'operations';
+    $row[] = array('data' => array('data' => drupal_get_form('mailchimp_campaign_operations_form'))); // Operations
 
     $rows[] = $row;
   }
@@ -152,9 +152,25 @@ function theme_mailchimp_campaign_mclinks($variables) {
 }
 
 /**
+ * Form for campaign operations: update datas and send.
+ */
+function mailchimp_campaign_operations_form($form, &$form_state) {
+  $form['mailchimp_campaign_update'] = array(
+    '#type' => 'submit',
+    '#value' => t('Update datas'),
+  );
+  $form['mailchimp_campaign_send'] = array(
+    '#type' => 'submit',
+    '#value' => t('Send campaign'),
+  );
+  
+  return $form;
+}
+
+/**
  * Form for create and send MailChimp campaign, from node content.
  */
-function mailchimp_campaign_createform($form, &$form_state) {
+function mailchimp_campaign_create_form($form, &$form_state) {
   $form['mailchimp_campaign_create'] = array(
     '#type' => 'fieldset',
     '#title' => t('Create new MailChimp camaign'),
@@ -171,20 +187,10 @@ function mailchimp_campaign_createform($form, &$form_state) {
 /**
  * Create MailChimp campaign on form submission.
  */
-function mailchimp_campaign_createform_submit($form, $form_state) {
+function mailchimp_campaign_create_form_submit($form, $form_state) {
   if (isset($form_state['build_info']['args'][0]->nid)) {
     $node = $form_state['build_info']['args'][0];
     mailchimp_campaign_create($node);
-  }
-}
-
-/**
- * Send MailChimp campaign on form submission.
- */
-function mailchimp_campaign_operationform_send($form, $form_state) {
-  if (isset($form_state['build_info']['args'][0]->nid)) {
-    $node = $form_state['build_info']['args'][0];
-    mailchimp_campaign_send($node);
   }
 }
 
