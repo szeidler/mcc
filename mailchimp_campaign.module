@@ -120,13 +120,13 @@ function mailchimp_campaign_node_view($node, $view_mode, $langcode) {
  */
 function theme_mailchimp_campaign_node_campaigns_list($variables) {
   $node_campaigns = $variables['node_campaigns'];
-  $header = array(t('ID'), t('Title'), t('Status'), t('MC links'), t('Last updated'), t('Actions'));
+  $header = array(t('ID'), t('List'), t('Status'), t('MC links'), t('Last updated'), t('Actions'));
 
   foreach ($node_campaigns as $cid => $campaign) {
     $row = array();
     $row[] = $cid; // ID
     if ($campaign['data']) {
-      $row[] = $campaign['data']['title']; // Title
+      $row[] = _mailchimp_campaign_list_name($campaign['data']['list_id']);
       $row[] = $campaign['data']['status']; // Status
       $row[] = theme('mailchimp_campaign_mclinks', array('data' => $campaign['data'])); // MC links
     }
@@ -383,4 +383,13 @@ function _mailchimp_campaign_lists_options() {
   }
 
   return $lists;
+}
+
+/**
+ * Return a MailChimp mailing list name.
+ */
+function _mailchimp_campaign_list_name($list_id) {
+  $lists_variable = variable_get('mailchimp_lists', array());
+
+  return $lists_variable[$list_id]->name;
 }
