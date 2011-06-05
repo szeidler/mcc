@@ -62,7 +62,7 @@ function mailchimp_campaign_node_view($node, $view_mode, $langcode) {
   if ($view_mode == 'full') {
     $campaign_enabled = variable_get('mailchimp_campaign_enabled_' . $node->type, FALSE);
     if ($campaign_enabled) {
-      $result = db_select('mailchimp_campaign_campaigns', 'm')
+      $result = db_select('mailchimp_campaign_node_campaigns', 'm')
         ->fields('m')
         ->condition('nid', $node->nid, '=')
         ->execute();
@@ -181,7 +181,7 @@ function mailchimp_campaign_create($node, $options = array()) {
     }
 
     // Write campaign details to the database.
-    drupal_write_record('mailchimp_campaign_campaigns', $record);
+    drupal_write_record('mailchimp_campaign_node_campaigns', $record);
   }
 }
 
@@ -208,7 +208,7 @@ function mailchimp_campaign_send($cid) {
       'sent' => 1,
     );
 
-    drupal_write_record('mailchimp_campaign_campaigns', $record, 'cid');
+    drupal_write_record('mailchimp_campaign_node_campaigns', $record, 'cid');
 
     $campaign_admin_link = _mailchimp_campaign_campaign_admin_url($cid);
     $message = t('MailChimp campaign was sent, campaign Id: <em>!cid</em>.', array('!cid' => $campaign_admin_link));
@@ -256,3 +256,5 @@ function _mailchimp_campaign_mailchimp_campaign_admin_link($text, $web_id) {
 function _mailchimp_campaign_mcapi_error_message($mcapi) {
   return t('MailChimp error code: <em>!errorCode</em>, MailChimp error message: <em>!errorMessage</em>.', array('!errorCode' => $mcapi->errorCode, '!errorMessage' => $mcapi->errorMessage));
 }
+
+

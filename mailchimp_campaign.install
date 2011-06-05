@@ -4,7 +4,7 @@
  * Implements hook_schema().
  */
 function mailchimp_campaign_schema() {
-  $schema['mailchimp_campaign_campaigns'] = array(
+  $schema['mailchimp_campaign_node_campaigns'] = array(
     'description' => 'MailChimp campaigns, created from nodes.',
     'fields' => array(
       'nid' => array(
