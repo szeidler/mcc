@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Implements hook_permission()
+ * Implements hook_permission().
  */
 function mailchimp_campaign_permission() {
   return array(
