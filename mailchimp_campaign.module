@@ -444,3 +444,15 @@ function _mailchimp_campaign_list_name($list_id) {
 
   return $lists_variable[$list_id]->name;
 }
+
+/**
+ * Change the relative URLs to absolute ones in the message.
+ */
+function _mailchimp_campaign_absolute_urls($text) {
+  global $base_url;
+
+  $text = str_replace('href="/', 'href="' . $base_url . '/', $text);
+  $text = str_replace("href='/", "href='" . $base_url . '/', $text);
+
+  return $text;
+}
