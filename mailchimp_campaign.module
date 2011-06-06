@@ -270,7 +270,6 @@ function mailchimp_campaign_create($node) {
   );
   $content = array(
     'html_main' => $node->body['und'][0]['safe_value'],
-    'text' => 'plain', // TODO
   );
 
   // Create campaign on MailChimp.
