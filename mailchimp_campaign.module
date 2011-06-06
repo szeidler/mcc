@@ -104,6 +104,24 @@ function mailchimp_campaign_form_node_type_form_alter(&$form, $form_state) {
  * Validate MailChimp settings on node type edit form.
  */
 function mailchimp_campaign_form_node_type_form_validate($form, &$form_state) {
+  $values = $form_state['values']['mailchimp_campaign'];
+  if ($values['enabled']) {
+    if (!$values['template_id']) {
+      form_set_error('mailchimp_campaign][template_id', t('Template ID is required, if MailChimp campaigns are enabled.'));
+    }
+    if (!$values['from_name']) {
+      form_set_error('mailchimp_campaign][from_name', t('From name is required, if MailChimp campaigns are enabled.'));
+    }
+    if (!$values['from_email']) {
+      form_set_error('mailchimp_campaign][from_email', t('From email is required, if MailChimp campaigns are enabled.'));
+    }
+  }
+  if (!is_numeric($values['template_id'])) {
+    form_set_error('mailchimp_campaign][template_id', t('Template ID must be numeric.'));
+  }
+  if (!valid_email_address($values['from_email'])) {
+    form_set_error('mailchimp_campaign][from_email', t('Not valid from email address.'));
+  }
 }
 
 /**
@@ -427,4 +445,3 @@ function _mailchimp_campaign_list_name($list_id) {
 
   return $lists_variable[$list_id]->name;
 }
-
