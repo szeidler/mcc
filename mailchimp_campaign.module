@@ -60,7 +60,7 @@ function mailchimp_campaign_theme($existing, $type, $theme, $path) {
  * Put MailChimp campaign module setting to the node type edit form.
  */
 function mailchimp_campaign_form_node_type_form_alter(&$form, $form_state) {
-  if (isset($form['type'])) {
+  if (isset($form['type']) && user_access('administer mailchimp campaign')) {
     $defaults = variable_get('mailchimp_campaign_node_type_settings_' . $form['#node_type']->type, FALSE);
     $form['mailchimp_campaign'] = array(
       '#type' => 'fieldset',
@@ -137,7 +137,7 @@ function mailchimp_campaign_form_node_type_form_submit($form, &$form_state) {
  * Put MailChimp campaign create and send form to the full node view.
  */
 function mailchimp_campaign_node_view($node, $view_mode, $langcode) {
-  if ($view_mode == 'full') {
+  if ($view_mode == 'full' && user_access('send mailchimp campaign')) {
     $settings = variable_get('mailchimp_campaign_node_type_settings_' . $node->type, array());
     if ($settings['enabled']) {
       $result = db_select('mailchimp_campaign_node_campaigns', 'm')
