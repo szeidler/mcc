@@ -268,7 +268,7 @@ function mailchimp_campaign_create($node) {
     'title' => check_plain($node->title),
     'template_id' => $defaults['template_id'],
   );
-  $body = _mailchimp_campaign_absolute_urls($node->body['und'][0]['safe_value']);
+  $body = _mailchimp_campaign_convert_url($node->body['und'][0]['safe_value']);
   $content = array(
     'html_main' => $body,
   );
@@ -449,23 +449,15 @@ function _mailchimp_campaign_list_name($list_id) {
 /**
  * Change the relative URLs to absolute ones in the message.
  */
-function _mailchimp_campaign_absolute_urls($text) {
+function _mailchimp_campaign_convert_url($text) {
   global $base_url;
   $matches = array();
-  preg_match_all('/<(a|img).*?(href|src)=("|\').*?("|\').*?>/', $text, $matches);
-  foreach ($matches[0] as $match) {
-    $attr = array();
-    preg_match('/(href|src)=("|\').*?("|\')/', $match, &$attr);
-    $new_attr = explode('"', $attr[0]);
-    if (!url_is_external($new_attr[1])) {
-      if ($new_attr[1][0] == '/') {
-        $new_attr = $new_attr[0] . '"' . $base_url . $new_attr[1] . '"';
-      }
-      else {
-        $new_attr = $new_attr[0] . '"' . $base_url . '/' . $new_attr[1] . '"';
-      }
-      $new_match = str_replace($attr[0], $new_attr, $match);
-      $text = str_replace($match, $new_match, $text);
+  preg_match_all('/<(a|img).*?(href|src)="(.*?)"/', $text, $matches);
+  foreach ($matches[3] as $key => $url) {
+    if ($url[0] == '/') {
+      $new_url = $base_url . $url;
+      $new_match = str_replace($url, $new_url, $matches[0][$key]);
+      $text = str_replace($matches[0][$key], $new_match, $text);
     }
   }
 
