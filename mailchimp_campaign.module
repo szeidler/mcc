@@ -193,14 +193,15 @@ function theme_mailchimp_campaign_node_campaigns_list($variables) {
     $row = array();
     $row[] = $cid; // ID
     if ($campaign['data']) {
-      $row[] = _mailchimp_campaign_list_name($campaign['data']['list_id']);
+      $row[] = _mailchimp_campaign_list_name($campaign['data']['list_id']); // List
       $row[] = $campaign['data']['status']; // Status
       $row[] = theme('mailchimp_campaign_mclinks', array('data' => $campaign['data'])); // MC links
     }
     else {
-      $row[] = '<em>' . t('No available information, please update.') . '</em>';
-      $row[] = '<em>' . t('No available information, please update.') . '</em>';
-      $row[] = '<em>' . t('No available information, please update.') . '</em>';
+      $ni = '<em>' . t('No available information, please update.') . '</em>';
+      $row[] = $ni;
+      $row[] = $ni;
+      $row[] = $ni;
     }
     $row[] = format_date($campaign['update_time']); // Last updated
     $row[] = theme('mailchimp_campaign_actions', array('data' => $campaign['data'])); // Actions
