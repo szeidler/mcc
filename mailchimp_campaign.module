@@ -82,8 +82,8 @@ function mailchimp_campaign_form_node_type_form_alter(&$form, $form_state) {
     $form['mailchimp_campaign']['template_id'] = array(
       '#type' => 'textfield',
       '#title' => t('Default template ID'),
-      '#description' => t('Template ID must be numeric.'),
-      '#default_value' => $defaults ? $defaults['template_id'] : '',
+      '#description' => t('Default template for the content type. Leave blank to reset to system defauts.'),
+      '#default_value' => $defaults ? $defaults['template_id'] : '1000188',
     );
     $form['mailchimp_campaign']['from_name'] = array(
       '#type' => 'textfield',
@@ -107,7 +107,7 @@ function mailchimp_campaign_form_node_type_form_validate($form, &$form_state) {
   $values = $form_state['values']['mailchimp_campaign'];
   if ($values['enabled']) {
     if (!$values['template_id']) {
-      form_set_error('mailchimp_campaign][template_id', t('Template ID is required, if MailChimp campaigns are enabled.'));
+      $form_state['values']['mailchimp_campaign']['template_id'] = '1000188';
     }
     if (!$values['from_name']) {
       form_set_error('mailchimp_campaign][from_name', t('From name is required, if MailChimp campaigns are enabled.'));
@@ -116,7 +116,7 @@ function mailchimp_campaign_form_node_type_form_validate($form, &$form_state) {
       form_set_error('mailchimp_campaign][from_email', t('From email is required, if MailChimp campaigns are enabled.'));
     }
   }
-  if (!is_numeric($values['template_id'])) {
+  if ($values['template_id'] && !is_numeric($values['template_id'])) {
     form_set_error('mailchimp_campaign][template_id', t('Template ID must be numeric.'));
   }
   if (!valid_email_address($values['from_email'])) {
