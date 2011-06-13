@@ -137,8 +137,14 @@ function mailchimp_campaign_form_node_type_form_validate($form, &$form_state) {
   if (!$values['title_section']) {
     $form_state['values']['mailchimp_campaign']['title_section'] = 'header_content';
   }
+  else if (!preg_match('/^[a-zA-Z0-9_]*$/', $values['title_section'])) {
+    form_set_error('mailchimp_campaign][title_section', t('Not valid title section.'));
+  }
   if (!$values['body_section']) {
     $form_state['values']['mailchimp_campaign']['body_section'] = 'std_content00';
+  }
+  else if (!preg_match('/^[a-zA-Z0-9_]*$/', $values['body_section'])) {
+    form_set_error('mailchimp_campaign][body_section', t('Not valid body section.'));
   }
 }
 
@@ -521,3 +527,4 @@ function _mailchimp_campaign_convert_url($text) {
 
   return $text;
 }
+
