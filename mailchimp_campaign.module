@@ -249,11 +249,48 @@ function theme_mailchimp_campaign_actions($variables) {
  * Form for create MailChimp campaign, from node content.
  */
 function mailchimp_campaign_create_form($form, &$form_state) {
+  $defaults = variable_get('mailchimp_campaign_node_type_settings_' . $form_state['build_info']['args'][0]->type, FALSE);
   $form['mailchimp_campaign_create'] = array(
     '#type' => 'fieldset',
     '#title' => t('Create new MailChimp camaign'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
+  );
+  $form['mailchimp_campaign_create']['list_id'] = array(
+    '#type' => 'select',
+    '#title' => t('List'),
+    '#default_value' => $defaults ? $defaults['list_id'] : FALSE,
+    '#options' => _mailchimp_campaign_lists_options(),
+  );
+  $form['mailchimp_campaign_create']['from_name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('From name'),
+    '#default_value' => $defaults ? $defaults['from_name'] : '',
+    '#description' => t('Leave blank to reset the content type defauts.'),
+  );
+  $form['mailchimp_campaign_create']['from_email'] = array(
+    '#type' => 'textfield',
+    '#title' => t('From email'),
+    '#default_value' => $defaults ? $defaults['from_email'] : variable_get('site_mail', FALSE),
+    '#description' => t('Leave blank to reset the content type defauts.'),
+  );
+  $form['mailchimp_campaign_create']['template_id'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Template ID'),
+    '#description' => t('Template ID for tihs campaign. Leave blank to reset the content type default.'),
+    '#default_value' => $defaults ? $defaults['template_id'] : '1000188',
+  );
+  $form['mailchimp_campaign_create']['title_section'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Title section'),
+    '#default_value' => $defaults ? $defaults['title_section'] : 'header_content',
+    '#description' => t('Leave blank to reset the content type defauts.'),
+  );
+  $form['mailchimp_campaign_create']['body_section'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Content section'),
+    '#default_value' => $defaults ? $defaults['body_section'] : 'std_content00',
+    '#description' => t('Leave blank to reset the content type defauts.'),
   );
   $form['mailchimp_campaign_create']['create'] = array(
     '#type' => 'submit',
@@ -484,4 +521,3 @@ function _mailchimp_campaign_convert_url($text) {
 
   return $text;
 }
-
