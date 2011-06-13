@@ -79,12 +79,6 @@ function mailchimp_campaign_form_node_type_form_alter(&$form, $form_state) {
       '#default_value' => $defaults ? $defaults['list_id'] : FALSE,
       '#options' => _mailchimp_campaign_lists_options(),
     );
-    $form['mailchimp_campaign']['template_id'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Default template ID'),
-      '#description' => t('Default template for the content type. Leave blank to reset to system defauts.'),
-      '#default_value' => $defaults ? $defaults['template_id'] : '1000188',
-    );
     $form['mailchimp_campaign']['from_name'] = array(
       '#type' => 'textfield',
       '#title' => t('Defaul from name'),
@@ -94,6 +88,22 @@ function mailchimp_campaign_form_node_type_form_alter(&$form, $form_state) {
       '#type' => 'textfield',
       '#title' => t('Default from email'),
       '#default_value' => $defaults ? $defaults['from_email'] : variable_get('site_mail', FALSE),
+    );
+    $form['mailchimp_campaign']['template_id'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Default template ID'),
+      '#description' => t('Default template for the content type. Leave blank to reset to system defauts.'),
+      '#default_value' => $defaults ? $defaults['template_id'] : '1000188',
+    );
+    $form['mailchimp_campaign']['title_section'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Default title section in the template. Leave blank to reset to system defauts.'),
+      '#default_value' => $defaults ? $defaults['title_section'] : 'header_content',
+    );
+    $form['mailchimp_campaign']['body_section'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Default content section in the template. Leave blank to reset to system defauts.'),
+      '#default_value' => $defaults ? $defaults['body_section'] : 'std_content00',
     );
     $form['#validate'][] = 'mailchimp_campaign_form_node_type_form_validate';
     $form['#submit'][] = 'mailchimp_campaign_form_node_type_form_submit';
@@ -106,9 +116,6 @@ function mailchimp_campaign_form_node_type_form_alter(&$form, $form_state) {
 function mailchimp_campaign_form_node_type_form_validate($form, &$form_state) {
   $values = $form_state['values']['mailchimp_campaign'];
   if ($values['enabled']) {
-    if (!$values['template_id']) {
-      $form_state['values']['mailchimp_campaign']['template_id'] = '1000188';
-    }
     if (!$values['from_name']) {
       form_set_error('mailchimp_campaign][from_name', t('From name is required, if MailChimp campaigns are enabled.'));
     }
@@ -116,11 +123,20 @@ function mailchimp_campaign_form_node_type_form_validate($form, &$form_state) {
       form_set_error('mailchimp_campaign][from_email', t('From email is required, if MailChimp campaigns are enabled.'));
     }
   }
-  if ($values['template_id'] && !is_numeric($values['template_id'])) {
-    form_set_error('mailchimp_campaign][template_id', t('Template ID must be numeric.'));
-  }
   if (!valid_email_address($values['from_email'])) {
     form_set_error('mailchimp_campaign][from_email', t('Not valid from email address.'));
+  }
+  if (!$values['template_id']) {
+    $form_state['values']['mailchimp_campaign']['template_id'] = '1000188';
+  }
+  else if (!is_numeric($values['template_id'])) {
+    form_set_error('mailchimp_campaign][template_id', t('Template ID must be numeric.'));
+  }
+  if (!$values['title_section']) {
+    $form_state['values']['mailchimp_campaign']['title_section'] = 'header_content';
+  }
+  if (!$values['body_section']) {
+    $form_state['values']['mailchimp_campaign']['body_section'] = 'std_content00';
   }
 }
 
@@ -257,6 +273,7 @@ function mailchimp_campaign_create_form_submit($form, $form_state) {
  * Create MailChimp campaign from a node.
  */
 function mailchimp_campaign_create($node) {
+  global $base_url;
   $mcapi = _mailchimp_get_api_object();
   $type = 'regular';
   $defaults = variable_get('mailchimp_campaign_node_type_settings_' . $node->type, FALSE);
@@ -269,9 +286,10 @@ function mailchimp_campaign_create($node) {
     'template_id' => $defaults['template_id'],
   );
   $body = _mailchimp_campaign_convert_url($node->body['und'][0]['safe_value']);
-  $content = array(
-    'html_main' => $body,
-  );
+  $content = array();
+  $content['html_' . $defaults['title_section']] = l(check_plain($node->title), $base_url . '/node/' . $node->nid);
+  $content['html_' . $defaults['body_section']] = $body;
+  dpm($content);
 
   // Create campaign on MailChimp.
   $cid = $mcapi->campaignCreate($type, $options, $content);
