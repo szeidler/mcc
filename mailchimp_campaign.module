@@ -75,7 +75,7 @@ function mailchimp_campaign_form_node_type_form_alter(&$form, $form_state) {
     );
     $form['mailchimp_campaign']['list_id'] = array(
       '#type' => 'select',
-      '#title' => t('Lists'),
+      '#title' => t('Default list'),
       '#default_value' => $defaults ? $defaults['list_id'] : FALSE,
       '#options' => _mailchimp_campaign_lists_options(),
     );
@@ -97,13 +97,15 @@ function mailchimp_campaign_form_node_type_form_alter(&$form, $form_state) {
     );
     $form['mailchimp_campaign']['title_section'] = array(
       '#type' => 'textfield',
-      '#title' => t('Default title section in the template. Leave blank to reset to system defauts.'),
+      '#title' => t('Default title section in the template.'),
       '#default_value' => $defaults ? $defaults['title_section'] : 'header_content',
+      '#description' => t('Leave blank to reset the system defauts.'),
     );
     $form['mailchimp_campaign']['body_section'] = array(
       '#type' => 'textfield',
-      '#title' => t('Default content section in the template. Leave blank to reset to system defauts.'),
+      '#title' => t('Default body section in the template.'),
       '#default_value' => $defaults ? $defaults['body_section'] : 'std_content00',
+      '#description' => t('Leave blank to reset the system defauts.'),
     );
     $form['#validate'][] = 'mailchimp_campaign_form_node_type_form_validate';
     $form['#submit'][] = 'mailchimp_campaign_form_node_type_form_submit';
@@ -482,3 +484,4 @@ function _mailchimp_campaign_convert_url($text) {
 
   return $text;
 }
+
