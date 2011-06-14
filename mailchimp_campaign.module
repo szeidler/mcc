@@ -424,7 +424,7 @@ function mailchimp_campaign_delete_form($form, &$form_state) {
     '#default_value' => 'db',
   );
 
-  return confirm_form($form, t('Are you sure you want to delete this campaign: <em>!id</em>', array('!id' => $campaign['data']['title'])), 'node/' . $campaign['nid']);
+  return confirm_form($form, t('Are you sure you want to delete this campaign: <em>!id</em>', array('!id' => $campaign['data']['title'])), 'node/' . $campaign['nid']. '/mailchimp-campaigns');
 }
 
 /**
@@ -614,7 +614,7 @@ function _mailchimp_campaign_action_access($campaign, $token, $op) {
         return drupal_get_form('mailchimp_campaign_delete_form', $campaign);
     }
   }
-  drupal_goto('node/' . $campaign['nid']);
+  drupal_goto('node/' . $campaign['nid'] . '/mailchimp-campaigns');
 }
 
 /**
