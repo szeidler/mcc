@@ -34,6 +34,13 @@ function mailchimp_campaign_menu() {
     'access arguments' => array('send mailchimp campaign'),
     'type' => MENU_CALLBACK,
   );
+  $items['mailchimp-campaign/%cid/delete/%'] = array(
+    'title' => 'Delete',
+    'page callback' => '_mailchimp_campaign_action_access',
+    'page arguments' => array(1, 3, 'delete'),
+    'access arguments' => array('administer mailchimp campaign'),
+    'type' => MENU_CALLBACK,
+  );
 
   return $items;
 }
@@ -243,6 +250,9 @@ function theme_mailchimp_campaign_actions($variables) {
   $data = $variables['data'];
 
   $items = array();
+  if (user_access('administer mailchimp campaign')) {
+    $items[] = l(t('Delete'), 'mailchimp-campaign/' . $data['id'] . '/delete/' . drupal_get_token('mailchimp_campaign'));
+  }
   $items[] = l(t('Update'), 'mailchimp-campaign/' . $data['id'] . '/update/' . drupal_get_token('mailchimp_campaign'));
   if ($data['status'] == 'save') {
     $items[] = l(t('Send'), 'mailchimp-campaign/' . $data['id'] . '/send/' . drupal_get_token('mailchimp_campaign'));
@@ -259,7 +269,7 @@ function mailchimp_campaign_create_form($form, &$form_state) {
   $defaults = variable_get('mailchimp_campaign_node_type_settings_' . $node->type, FALSE);
   $form['mailchimp_campaign_create'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Create new MailChimp camaign'),
+    '#title' => t('Create new MailChimp campaign'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#tree' => TRUE,
@@ -373,6 +383,42 @@ function mailchimp_campaign_create_form_submit($form, $form_state) {
 }
 
 /**
+ * Form for delete a campaign form the database and/or MailChimp.
+ */
+function mailchimp_campaign_delete_form($form, &$form_state) {
+  $campaign = $form_state['build_info']['args'][0];
+  $campaign['data'] = unserialize($campaign['data']);
+  $admin_link = _mailchimp_campaign_mailchimp_admin_link(t('Campaign admin page'), 'campaigns/show', $campaign['data']['web_id']);
+
+  $form['info'] = array('#markup' => '<p>Campaign ID: <em>' . $campaign['cid'] . '</em><br />'. $admin_link . '</p>');
+  $form['delete_from'] = array(
+    '#type' => 'radios',
+    '#title' => t('Delete campaign'),
+    '#options' => array(
+      'db' => t('Only from site database'),
+      'mc' => t('From site database and from MailChimp'),
+    ),
+    '#default_value' => 'db',
+  );
+
+  return confirm_form($form, t('Are you sure you want to delete this campaign: <em>!id</em>', array('!id' => $campaign['data']['title'])), 'node/' . $campaign['nid']);
+}
+
+/**
+ * Delete a campaign from the database on form submit.
+ */
+function mailchimp_campaign_delete_form_submit($form, &$form_state) {
+  $cid = $form_state['build_info']['args'][0]['cid'];
+  if ($form_state['values']['delete_from'] == 'mc') {
+    mailchimp_campaign_delete_campaign($cid);
+  }
+  else {
+    _mailchimp_campaign_delete_form_database($cid);
+  }
+  drupal_goto('node/' . $campaign['nid']);
+}
+
+/**
  * Create MailChimp campaign from a node.
  */
 function mailchimp_campaign_create($node, $settings) {
@@ -420,7 +466,7 @@ function mailchimp_campaign_create($node, $settings) {
 }
 
 /**
- * Update camaign datas in the database.
+ * Update campaign datas in the database.
  */
 function mailchimp_campaign_update_campaign($cid, $update = TRUE) {
   $mcapi = _mailchimp_get_api_object();
@@ -493,7 +539,7 @@ function cid_load($cid) {
 }
 
 /**
- * Validate user before update or send a campaign.
+ * Validate user before operate with a campaign.
  */
 function _mailchimp_campaign_action_access($campaign, $token, $op) {
   if (drupal_valid_token($token, 'mailchimp_campaign')) {
@@ -504,6 +550,8 @@ function _mailchimp_campaign_action_access($campaign, $token, $op) {
       case 'send':
         mailchimp_campaign_send($campaign['cid']);
         break;
+      case 'delete':
+        return drupal_get_form('mailchimp_campaign_delete_form', $campaign);
     }
   }
   drupal_goto('node/' . $campaign['nid']);
@@ -582,4 +630,25 @@ function _mailchimp_campaign_convert_url($text) {
   }
 
   return $text;
+}
+
+/**
+ * Delete a campaign from the database.
+ */
+function _mailchimp_campaign_delete_form_database($cid) {
+  $delete = db_delete('mailchimp_campaign_node_campaigns')
+    ->condition('cid', $cid)
+    ->execute();
+    dpm($delete);
+
+  if ($delete) {
+    $message = t('MailChimp campaign was deleted from database. (Campaign ID: <em>!cid</em>)', array('!cid' => $cid));
+    drupal_set_message($message);
+    watchdog('mailchimp_campaign', $message);
+  }
+  else {
+    $message = t('Some error has occured. The campaign was not deleted from the database.');
+    drupal_set_message($message, 'error');
+  }
+
 }
