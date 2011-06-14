@@ -438,7 +438,7 @@ function mailchimp_campaign_delete_form_submit($form, &$form_state) {
   else {
     _mailchimp_campaign_delete_form_database($campaign['cid']);
   }
-  drupal_goto('node/' . $campaign['nid']);
+  drupal_goto('node/' . $campaign['nid'] . '/mailchimp-campaigns');
 }
 
 /**
@@ -716,5 +716,15 @@ function _mailchimp_campaign_delete_form_database($cid) {
  */
 function _mailchimp_campaign_body($node) {
   $render = node_view($node, 'mailchimp_campaign');
-  return _mailchimp_campaign_convert_url(drupal_render($render));
+  $content = drupal_render($render);
+  return _mailchimp_campaign_convert_url($content);
+}
+
+/**
+ * Node preprocess for campaigns.
+ */
+function mailchimp_campaign_preprocess_node(&$variables) {
+  if ($variables['view_mode'] == 'mailchimp_campaign') {
+    $variables['theme_hook_suggestions'][] = 'node__mailchimp_campaign';
+  }
 }
