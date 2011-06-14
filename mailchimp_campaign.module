@@ -431,12 +431,17 @@ function mailchimp_campaign_create($node, $settings) {
     'from_name' => $settings['from_name'],
     'title' => $settings['campaign_title'],
     'template_id' => $settings['template_id'],
+    'generate_text' => TRUE,
+    'tracking' => array(
+      'opens' => TRUE,
+      'html_clicks' => TRUE,
+      'text_clicks' => TRUE,
+    ),
   );
   $body = _mailchimp_campaign_convert_url($node->body[$node->language][0]['safe_value']);
   $content = array();
   $content['html_' . $settings['title_section']] = l(check_plain($node->title), $base_url . '/node/' . $node->nid);
   $content['html_' . $settings['body_section']] = $body;
-  $content['text'] = 'plain';
 
   // Create campaign on MailChimp.
   $cid = $mcapi->campaignCreate($type, $options, $content);
