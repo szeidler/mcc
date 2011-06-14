@@ -176,7 +176,6 @@ function mailchimp_campaign_form_node_type_form_submit($form, &$form_state) {
  */
 function mailchimp_campaign_node_campaigns_list($node) {
   $content = '';
-  dpm($node);
   $settings = variable_get('mailchimp_campaign_node_type_settings_' . $node->type, array());
   if ($settings['enabled']) {
     $result = db_select('mailchimp_campaign_node_campaigns', 'm')
@@ -450,8 +449,8 @@ function mailchimp_campaign_create($node, $settings) {
       'text_clicks' => TRUE,
     ),
   );
-  $body = _mailchimp_campaign_convert_url($node->body[$node->language][0]['safe_value']);
-  $title =  l(check_plain($node->title), $base_url . '/node/' . $node->nid);
+  $body = _mailchimp_campaign_convert_url(drupal_render(node_view($node)));
+  $title =  l(check_plain($node->title), 'node/' . $node->nid, array('absolute' => TRUE));
   $content = array();
   if ($settings['title_section'] == $settings['body_section']) {
     $content['html_' . $settings['body_section']] = '<h1>' . $title . '</h1>' . $body;
@@ -697,5 +696,4 @@ function _mailchimp_campaign_delete_form_database($cid) {
     $message = t('Some error has occured. The campaign was not deleted from the database.');
     drupal_set_message($message, 'error');
   }
-
 }
