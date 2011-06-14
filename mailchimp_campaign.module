@@ -171,6 +171,16 @@ function mailchimp_campaign_form_node_type_form_submit($form, &$form_state) {
 }
 
 /**
+ * Implements hook_entity_info_alter().
+ */
+function mailchimp_campaign_entity_info_alter(&$entity_info) {
+  $entity_info['node']['view modes']['mailchimp_campaign'] = array(
+    'label' => t('MailChimp campaign'),
+    'custom settings' => TRUE,
+  );
+}
+
+/**
  * Implements hook_node_view().
  * Put MailChimp campaign create and send form to the full node view.
  */
@@ -198,6 +208,9 @@ function mailchimp_campaign_node_campaigns_list($node) {
     }
 
     $content .= drupal_render(drupal_get_form('mailchimp_campaign_create_form', $node));
+
+    $content .= '<h2>' . t('Campaign content preview') . '</h2>';
+    $content .= _mailchimp_campaign_body($node);
   }
   else {
     $content .= t('MailChimp campaigns are not enabled for this node type.');
@@ -449,7 +462,7 @@ function mailchimp_campaign_create($node, $settings) {
       'text_clicks' => TRUE,
     ),
   );
-  $body = _mailchimp_campaign_convert_url(drupal_render(node_view($node)));
+  $body = _mailchimp_campaign_body($node);
   $title =  l(check_plain($node->title), 'node/' . $node->nid, array('absolute' => TRUE));
   $content = array();
   if ($settings['title_section'] == $settings['body_section']) {
@@ -696,4 +709,12 @@ function _mailchimp_campaign_delete_form_database($cid) {
     $message = t('Some error has occured. The campaign was not deleted from the database.');
     drupal_set_message($message, 'error');
   }
+}
+
+/**
+ * Returns campaign content of a node.
+ */
+function _mailchimp_campaign_body($node) {
+  $render = node_view($node, 'mailchimp_campaign');
+  return _mailchimp_campaign_convert_url(drupal_render($render));
 }
