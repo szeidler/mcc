@@ -337,7 +337,6 @@ function mailchimp_campaign_create_form($form, &$form_state) {
 function mailchimp_campaign_create_form_validate($form, &$form_state) {
   $node = $form_state['build_info']['args'][0];
   $defaults = variable_get('mailchimp_campaign_node_type_settings_' . $node->type, FALSE);
-  dpm($defaults);
   $values = $form_state['values']['mailchimp_campaign_create'];
 
   if (!$values['from_email']){
@@ -408,12 +407,12 @@ function mailchimp_campaign_delete_form($form, &$form_state) {
  * Delete a campaign from the database on form submit.
  */
 function mailchimp_campaign_delete_form_submit($form, &$form_state) {
-  $cid = $form_state['build_info']['args'][0]['cid'];
+  $campaign = $form_state['build_info']['args'][0];
   if ($form_state['values']['delete_from'] == 'mc') {
-    mailchimp_campaign_delete_campaign($cid);
+    mailchimp_campaign_delete_campaign($campaign['cid']);
   }
   else {
-    _mailchimp_campaign_delete_form_database($cid);
+    _mailchimp_campaign_delete_form_database($campaign['cid']);
   }
   drupal_goto('node/' . $campaign['nid']);
 }
@@ -514,7 +513,7 @@ function mailchimp_campaign_send($cid) {
 
   if ($mcapi->errorCode) {
     // Display and log error, if any.
-    $message = t('MailChimp error. The campaign was not sent (Campaign Id: <em>!cid</em>).', array('!cid' => $cid)) . ' ' . _mailchimp_campaign_mcapi_error_message($mcapi);
+    $message = t('MailChimp error. The campaign was not sent, campaign Id: <em>!cid</em>.', array('!cid' => $cid)) . ' ' . _mailchimp_campaign_mcapi_error_message($mcapi);
 
     drupal_set_message($message, 'error');
     watchdog('mailchimp_campaign', $message, array(), WATCHDOG_ERROR);
@@ -524,6 +523,32 @@ function mailchimp_campaign_send($cid) {
     mailchimp_campaign_update_campaign($cid);
 
     $message = t('MailChimp campaign was sent, campaign Id: <em>!cid</em>.', array('!cid' => $cid));
+
+    drupal_set_message($message);
+    watchdog('mailchimp_campaign', $message);
+  }
+}
+
+/**
+ * Delete a campaign from MailChimp.
+ */
+function mailchimp_campaign_delete_campaign($cid) {
+  $mcapi = _mailchimp_get_api_object();
+
+  // Delete campaign
+  $delete = $mcapi->campaignDelete($cid);
+
+  if ($mcapi->errorCode) {
+    // Display and log error, if any.
+    $message = t('MailChimp error. The campaign was not deleted, campaign ID: <em>!cid</em>.', array('!cid' => $cid)) . ' ' . _mailchimp_campaign_mcapi_error_message($mcapi);
+
+    drupal_set_message($message, 'error');
+  }
+  else {
+    // Delete campaign from the database
+    _mailchimp_campaign_delete_form_database($cid);
+
+    $message = t('MailChimp campaign was deleted from MailChimp, campaign ID: <em>!cid</em>.', array('!cid' => $cid));
 
     drupal_set_message($message);
     watchdog('mailchimp_campaign', $message);
@@ -639,10 +664,9 @@ function _mailchimp_campaign_delete_form_database($cid) {
   $delete = db_delete('mailchimp_campaign_node_campaigns')
     ->condition('cid', $cid)
     ->execute();
-    dpm($delete);
 
   if ($delete) {
-    $message = t('MailChimp campaign was deleted from database. (Campaign ID: <em>!cid</em>)', array('!cid' => $cid));
+    $message = t('MailChimp campaign was deleted from database, campaign ID: <em>!cid</em>.', array('!cid' => $cid));
     drupal_set_message($message);
     watchdog('mailchimp_campaign', $message);
   }
