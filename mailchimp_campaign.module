@@ -740,3 +740,14 @@ function mailchimp_campaign_preprocess_node(&$variables) {
     $variables['theme_hook_suggestions'][] = 'node__mailchimp_campaign';
   }
 }
+
+/**
+ * Implements hook_theme_registry_alter().
+ */
+function mailchimp_campaign_theme_registry_alter(&$theme_registry) {
+  if (!isset($theme_registry['node__mailchimp_campaign'])) {
+    $theme_registry['node__mailchimp_campaign']['template'] = drupal_get_path('module', 'mailchimp_campaign') . '/node--mailchimp-campaign';
+    $theme_registry['node__mailchimp_campaign']['type'] = 'module';
+    $theme_registry['node__mailchimp_campaign']['theme path'] = drupal_get_path('module', 'mailchimp_campaign');
+  }
+}
