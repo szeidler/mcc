@@ -176,7 +176,7 @@ function mailchimp_campaign_form_node_type_form_submit($form, &$form_state) {
 function mailchimp_campaign_entity_info_alter(&$entity_info) {
   $entity_info['node']['view modes']['mailchimp_campaign'] = array(
     'label' => t('MailChimp campaign'),
-    'custom settings' => TRUE,
+    'custom settings' => FALSE,
   );
 }
 
