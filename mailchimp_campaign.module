@@ -64,7 +64,7 @@ function mailchimp_campaign_theme($existing, $type, $theme, $path) {
       'variables' => array('data' => NULL),
     ),
     'mailchimp_campaign_actions' => array(
-      'variables' => array('data' => NULL),
+      'variables' => array('cid' => NULL, 'data' => NULL),
     ),
   );
 }
@@ -132,6 +132,9 @@ function mailchimp_campaign_form_node_type_form_alter(&$form, $form_state) {
 function mailchimp_campaign_form_node_type_form_validate($form, &$form_state) {
   $values = $form_state['values']['mailchimp_campaign'];
   if ($values['enabled']) {
+    if (!$values['list_id']) {
+      form_set_error('mailchimp_campaign][list_id', t('List field is required, if MailChimp campaigns are enabled.'));
+    }
     if (!$values['from_name']) {
       form_set_error('mailchimp_campaign][from_name', t('From name is required, if MailChimp campaigns are enabled.'));
     }
@@ -243,7 +246,7 @@ function theme_mailchimp_campaign_node_campaigns_list($variables) {
       $row[] = $ni;
     }
     $row[] = format_date($campaign['update_time']); // Last updated
-    $row[] = theme('mailchimp_campaign_actions', array('data' => $campaign['data'])); // Actions
+    $row[] = theme('mailchimp_campaign_actions', array('cid' => $campaign['cid'], 'data' => $campaign['data'])); // Actions
 
     $rows[] = $row;
   }
@@ -272,14 +275,15 @@ function theme_mailchimp_campaign_mclinks($variables) {
  */
 function theme_mailchimp_campaign_actions($variables) {
   $data = $variables['data'];
+  $cid = $variables['cid'];
 
   $items = array();
   if (user_access('administer mailchimp campaign')) {
-    $items[] = l(t('Delete'), 'mailchimp-campaign/' . $data['id'] . '/delete/' . drupal_get_token('mailchimp_campaign'));
+    $items[] = l(t('Delete'), 'mailchimp-campaign/' . $cid . '/delete/' . drupal_get_token('mailchimp_campaign'));
   }
-  $items[] = l(t('Update'), 'mailchimp-campaign/' . $data['id'] . '/update/' . drupal_get_token('mailchimp_campaign'));
+  $items[] = l(t('Update'), 'mailchimp-campaign/' . $cid . '/update/' . drupal_get_token('mailchimp_campaign'));
   if ($data['status'] == 'save') {
-    $items[] = l(t('Send'), 'mailchimp-campaign/' . $data['id'] . '/send/' . drupal_get_token('mailchimp_campaign'));
+    $items[] = l(t('Send'), 'mailchimp-campaign/' . $cid . '/send/' . drupal_get_token('mailchimp_campaign'));
   }
 
   return theme('item_list', array('items' => $items));
@@ -371,7 +375,7 @@ function mailchimp_campaign_create_form_validate($form, &$form_state) {
   $values = $form_state['values']['mailchimp_campaign_create'];
 
   if (empty($values['list_id'])) {
-    $form_state['values']['mailchimp_campaign_create']['list_id'] = $defaults['list_id'];
+    form_set_error('mailchimp_campaign_create][list_id', t('Select a List!'));
   }
 
   if (empty($values['from_name'])) {
@@ -458,7 +462,7 @@ function mailchimp_campaign_delete_form_submit($form, &$form_state) {
  */
 function mailchimp_campaign_create($node, $settings) {
   global $base_url;
-  $mcapi = _mailchimp_get_api_object();
+  $mcapi = mailchimp_get_api_object();
   $type = 'regular';
   $options = array(
     'list_id' => $settings['list_id'],
@@ -515,7 +519,7 @@ function mailchimp_campaign_create($node, $settings) {
  * Update campaign datas in the database.
  */
 function mailchimp_campaign_update_campaign($cid, $update = TRUE) {
-  $mcapi = _mailchimp_get_api_object();
+  $mcapi = mailchimp_get_api_object();
 
   $record = array(
     'cid' => $cid,
@@ -533,13 +537,13 @@ function mailchimp_campaign_update_campaign($cid, $update = TRUE) {
     watchdog('mailchimp_campaign', $message, array(), WATCHDOG_ERROR);
   }
   else {
-    $record['data'] = serialize($campaign[0]);
+    $record['data'] = serialize($campaign['data'][0]);
 
     if ($update) {
       // Update record.
       drupal_write_record('mailchimp_campaign_node_campaigns', $record, array('cid'));
 
-      $message = t('<em>!title</em> campaign datas was updated.', array('!title' => $campaign[0]['title']));
+      $message = t('<em>!title</em> campaign datas was updated.', array('!title' => $campaign['data'][0]['title']));
 
       drupal_set_message($message);
       watchdog('mailchimp_campaign', $message);
@@ -553,7 +557,7 @@ function mailchimp_campaign_update_campaign($cid, $update = TRUE) {
  * Send MailChimp campaign.
  */
 function mailchimp_campaign_send($cid) {
-  $mcapi = _mailchimp_get_api_object();
+  $mcapi = mailchimp_get_api_object();
 
   // Send campaign.
   $sent = $mcapi->campaignSendNow($cid);
@@ -580,7 +584,7 @@ function mailchimp_campaign_send($cid) {
  * Delete a campaign from MailChimp.
  */
 function mailchimp_campaign_delete_campaign($cid) {
-  $mcapi = _mailchimp_get_api_object();
+  $mcapi = mailchimp_get_api_object();
 
   // Delete campaign
   $delete = $mcapi->campaignDelete($cid);
@@ -667,23 +671,23 @@ function _mailchimp_campaign_mcapi_error_message($mcapi) {
  * Returns an array of mailing lists, for option values.
  */
 function _mailchimp_campaign_lists_options() {
-  $lists_variable = variable_get('mailchimp_lists', array());
+  $lists = mailchimp_get_lists();
 
-  $lists = array();
-  foreach ($lists_variable as $list) {
-    $lists[$list->id] = $list->name;
+  $options = array('' => t('-- Select --'));
+  foreach ($lists as $list) {
+    $options[$list['id']] = $list['name'];
   }
 
-  return $lists;
+  return $options;
 }
 
 /**
  * Return a MailChimp mailing list name.
  */
 function _mailchimp_campaign_list_name($list_id) {
-  $lists_variable = variable_get('mailchimp_lists', array());
+  $lists = mailchimp_get_lists();
 
-  return $lists_variable[$list_id]->name;
+  return $lists[$list_id]['name'];
 }
 
 /**
