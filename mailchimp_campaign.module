@@ -29,27 +29,75 @@ function mailchimp_campaign_menu() {
   );
   $items['mailchimp-campaign/%mailchimp_campaign/update/%'] = array(
     'title' => 'Update',
-    'page callback' => '_mailchimp_campaign_action_access',
-    'page arguments' => array(1, 3, 'update'),
-    'access arguments' => array('send mailchimp campaign'),
+    'page callback' => 'mailchimp_campaign_menu_operations',
+    'page arguments' => array(1, 2),
+    'access callback' => 'mailchimp_campaign_access',
+    'access arguments' => array(3, 'send mailchimp campaign'),
     'type' => MENU_CALLBACK,
   );
   $items['mailchimp-campaign/%mailchimp_campaign/send/%'] = array(
     'title' => 'Send',
-    'page callback' => '_mailchimp_campaign_action_access',
-    'page arguments' => array(1, 3, 'send'),
-    'access arguments' => array('send mailchimp campaign'),
+    'page callback' => 'mailchimp_campaign_menu_operations',
+    'page arguments' => array(1, 2),
+    'access callback' => 'mailchimp_campaign_access',
+    'access arguments' => array(3, 'send mailchimp campaign'),
     'type' => MENU_CALLBACK,
   );
   $items['mailchimp-campaign/%mailchimp_campaign/delete/%'] = array(
     'title' => 'Delete',
-    'page callback' => '_mailchimp_campaign_action_access',
-    'page arguments' => array(1, 3, 'delete'),
-    'access arguments' => array('administer mailchimp campaign'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mailchimp_campaign_delete_form', 1),
+    'access callback' => 'mailchimp_campaign_access',
+    'access arguments' => array(3, 'administer mailchimp campaign'),
     'type' => MENU_CALLBACK,
   );
 
   return $items;
+}
+
+function mailchimp_campaign_load($cid) {
+  return db_select('mailchimp_campaign_node_campaigns', 'm')
+    ->fields('m')
+    ->condition('cid', $cid)
+    ->execute()
+    ->fetchAssoc();
+}
+
+/**
+ * Access callback for menu items.
+ */
+function mailchimp_campaign_access($token, $permission) {
+  if (drupal_valid_token($token, 'mailchimp_campaign') && user_access($permission)) {
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+/**
+ * Call update or send operations, then returns to the destination.
+ */
+function mailchimp_campaign_menu_operations($campaign, $op) {
+  switch ($op) {
+    case 'update':
+        mailchimp_campaign_update_campaign($campaign['cid']);
+      break;
+    case 'send':
+        mailchimp_campaign_send($campaign['cid']);
+      break;
+  }
+
+  $destination = drupal_get_destination();
+  // If no given destination, drupal_get_destination() returns with $_GET['q'].
+  if ($destination['destination'] != $_GET['q']) {
+    $destination = $destination['destination'];
+  }
+  // Define new destination to avoid infinite loop.
+  else {
+    $destination = 'node/' . $campaign['nid'] . '/mailchimp-campaigns';
+  }
+
+  drupal_goto($destination);
 }
 
 /**
@@ -454,7 +502,6 @@ function mailchimp_campaign_delete_form_submit($form, &$form_state) {
   else {
     _mailchimp_campaign_delete_form_database($campaign['cid']);
   }
-  drupal_goto('node/' . $campaign['nid'] . '/mailchimp-campaigns');
 }
 
 /**
@@ -604,33 +651,6 @@ function mailchimp_campaign_delete_campaign($cid) {
     drupal_set_message($message);
     watchdog('mailchimp_campaign', $message);
   }
-}
-
-function mailchimp_campaign_load($cid) {
-  return db_select('mailchimp_campaign_node_campaigns', 'm')
-    ->fields('m')
-    ->condition('cid', $cid)
-    ->execute()
-    ->fetchAssoc();
-}
-
-/**
- * Validate user before operate with a campaign.
- */
-function _mailchimp_campaign_action_access($campaign, $token, $op) {
-  if (drupal_valid_token($token, 'mailchimp_campaign')) {
-    switch ($op) {
-      case 'update':
-        mailchimp_campaign_update_campaign($campaign['cid']);
-        break;
-      case 'send':
-        mailchimp_campaign_send($campaign['cid']);
-        break;
-      case 'delete':
-        return drupal_get_form('mailchimp_campaign_delete_form', $campaign);
-    }
-  }
-  drupal_goto('node/' . $campaign['nid'] . '/mailchimp-campaigns');
 }
 
 /**
