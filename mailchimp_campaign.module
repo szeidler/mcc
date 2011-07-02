@@ -11,7 +11,7 @@ function mailchimp_campaign_permission() {
     ),
     'send mailchimp campaign' => array(
       'title' => t('Send MailChimp campaigns'),
-      'description' => t('Create and send MailChiimp campaigns form nodes.'),
+      'description' => t('Create and send MailChimp campaigns form nodes.'),
     ),
   );
 }
@@ -27,21 +27,21 @@ function mailchimp_campaign_menu() {
     'access arguments' => array('send mailchimp campaign'),
     'type' => MENU_LOCAL_TASK,
   );
-  $items['mailchimp-campaign/%cid/update/%'] = array(
+  $items['mailchimp-campaign/%mailchimp_campaign/update/%'] = array(
     'title' => 'Update',
     'page callback' => '_mailchimp_campaign_action_access',
     'page arguments' => array(1, 3, 'update'),
     'access arguments' => array('send mailchimp campaign'),
     'type' => MENU_CALLBACK,
   );
-  $items['mailchimp-campaign/%cid/send/%'] = array(
+  $items['mailchimp-campaign/%mailchimp_campaign/send/%'] = array(
     'title' => 'Send',
     'page callback' => '_mailchimp_campaign_action_access',
     'page arguments' => array(1, 3, 'send'),
     'access arguments' => array('send mailchimp campaign'),
     'type' => MENU_CALLBACK,
   );
-  $items['mailchimp-campaign/%cid/delete/%'] = array(
+  $items['mailchimp-campaign/%mailchimp_campaign/delete/%'] = array(
     'title' => 'Delete',
     'page callback' => '_mailchimp_campaign_action_access',
     'page arguments' => array(1, 3, 'delete'),
@@ -606,7 +606,7 @@ function mailchimp_campaign_delete_campaign($cid) {
   }
 }
 
-function cid_load($cid) {
+function mailchimp_campaign_load($cid) {
   return db_select('mailchimp_campaign_node_campaigns', 'm')
     ->fields('m')
     ->condition('cid', $cid)
