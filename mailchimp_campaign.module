@@ -137,6 +137,7 @@ function mailchimp_campaign_form_node_type_form_alter(&$form, $form_state) {
     '#default_value' => $defaults ? $defaults['enabled'] : FALSE,
   );
   mailchimp_campaign_settings_form(&$form, $defaults);
+  $form['mailchimp_campaign']['list_id']['#required'] = FALSE;
   $form['#validate'][] = 'mailchimp_campaign_form_node_type_form_validate';
   $form['#submit'][] = 'mailchimp_campaign_form_node_type_form_submit';
 }
@@ -145,39 +146,13 @@ function mailchimp_campaign_form_node_type_form_alter(&$form, $form_state) {
  * Validate MailChimp settings on node type edit form.
  */
 function mailchimp_campaign_form_node_type_form_validate($form, &$form_state) {
+  module_load_include('inc', 'mailchimp_campaign', 'mailchimp_campaign.settings');
+
   $values = $form_state['values']['mailchimp_campaign'];
-  if ($values['enabled']) {
-    if (!$values['list_id']) {
-      form_set_error('mailchimp_campaign][list_id', t('List field is required, if MailChimp campaigns are enabled.'));
-    }
-    if (!$values['from_name']) {
-      form_set_error('mailchimp_campaign][from_name', t('From name is required, if MailChimp campaigns are enabled.'));
-    }
-    if (!$values['from_email']) {
-      form_set_error('mailchimp_campaign][from_email', t('From email is required, if MailChimp campaigns are enabled.'));
-    }
+  if ($values['enabled'] && !$values['list_id']) {
+    form_set_error('mailchimp_campaign][list_id', t('List field is required, if MailChimp campaigns are enabled.'));
   }
-  if (!valid_email_address($values['from_email'])) {
-    form_set_error('mailchimp_campaign][from_email', t('Not valid from email address.'));
-  }
-  if (!$values['template_id']) {
-    $form_state['values']['mailchimp_campaign']['template_id'] = '1000188';
-  }
-  else if (!is_numeric($values['template_id'])) {
-    form_set_error('mailchimp_campaign][template_id', t('Template ID must be numeric.'));
-  }
-  if (!$values['title_section']) {
-    $form_state['values']['mailchimp_campaign']['title_section'] = 'header_content';
-  }
-  else if (!preg_match('/^[a-zA-Z0-9_]*$/', $values['title_section'])) {
-    form_set_error('mailchimp_campaign][title_section', t('Not valid title section.'));
-  }
-  if (!$values['body_section']) {
-    $form_state['values']['mailchimp_campaign']['body_section'] = 'std_content00';
-  }
-  else if (!preg_match('/^[a-zA-Z0-9_]*$/', $values['body_section'])) {
-    form_set_error('mailchimp_campaign][body_section', t('Not valid body section.'));
-  }
+  mailchimp_campaign_settings_form_validate($form, &$form_state);
 }
 
 /**
@@ -346,45 +321,11 @@ function mailchimp_campaign_create_form($form, &$form_state) {
  * Validate MailChimp campaign creation form.
  */
 function mailchimp_campaign_create_form_validate($form, &$form_state) {
+  module_load_include('inc', 'mailchimp_campaign', 'mailchimp_campaign.settings');
   $node = $form_state['build_info']['args'][0];
-  $defaults = variable_get('mailchimp_campaign_node_type_settings_' . $node->type, FALSE);
-  $values = $form_state['values']['mailchimp_campaign'];
+  $form_state['defaults'] = variable_get('mailchimp_campaign_node_type_settings_' . $node->type, FALSE);
 
-  if (empty($values['list_id'])) {
-    form_set_error('mailchimp_campaign][list_id', t('Select a List!'));
-  }
-
-  if (empty($values['from_name'])) {
-    $form_state['values']['mailchimp_campaign']['from_name'] = $defaults['from_name'];
-  }
-
-  if (empty($values['from_email'])) {
-    $form_state['values']['mailchimp_campaign']['from_email'] = $defaults['from_email'];
-  }
-  else if (!valid_email_address($values['from_email'])) {
-    form_set_error('mailchimp_campaign][from_email', t('From email is not valid.'));
-  }
-
-  if (empty($values['template_id'])) {
-    $form_state['values']['mailchimp_campaign']['template_id'] = $defaults['template_id'];
-  }
-  else if (!is_numeric($values['template_id'])) {
-    form_set_error('mailchimp_campaign][template_id', t('Template ID must be numeric.'));
-  }
-
-  if (empty($values['title_section'])) {
-    $form_state['values']['mailchimp_campaign']['title_section'] = $defaults['title_section'];
-  }
-  else if (!preg_match('/^[a-zA-Z0-9_]*$/', $values['title_section'])) {
-    form_set_error('mailchimp_campaign][title_section', t('Not valid title section.'));
-  }
-
-  if (empty($values['body_section'])) {
-    $form_state['values']['mailchimp_campaign']['body_section'] = $defaults['body_section'];
-  }
-  else if (!preg_match('/^[a-zA-Z0-9_]*$/', $values['body_section'])) {
-    form_set_error('mailchimp_campaign][body_section', t('Not valid body section.'));
-  }
+  mailchimp_campaign_settings_form_validate($form, &$form_state);
 }
 
 /**
