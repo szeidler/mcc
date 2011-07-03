@@ -5,10 +5,6 @@
  */
 function mailchimp_campaign_permission() {
   return array(
-    'administer mailchimp campaign' =>  array(
-      'title' => t('Administer MailChimp campaigns'),
-      'description' => t('Administer MailChimp campaigns for node types.'),
-    ),
     'send mailchimp campaign' => array(
       'title' => t('Send MailChimp campaigns'),
       'description' => t('Create and send MailChimp campaigns form nodes.'),
@@ -25,7 +21,7 @@ function mailchimp_campaign_menu() {
     'description' => 'Manage sitewide default MailChimp Campaigns settings.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('mailchimp_campaign_admin_form'),
-    'access arguments' => array('administer mailchimp campaign'),
+    'access arguments' => array('administer mailchimp'),
     'type' => MENU_LOCAL_TASK,
     'file' => 'mailchimp_campaign.admin.inc',
     'weight' => 10
@@ -58,7 +54,7 @@ function mailchimp_campaign_menu() {
     'page callback' => 'drupal_get_form',
     'page arguments' => array('mailchimp_campaign_delete_form', 1),
     'access callback' => 'mailchimp_campaign_access',
-    'access arguments' => array(3, 'administer mailchimp campaign'),
+    'access arguments' => array(3, 'administer mailchimp'),
     'type' => MENU_CALLBACK,
   );
 
@@ -279,7 +275,7 @@ function theme_mailchimp_campaign_actions($variables) {
   $cid = $variables['cid'];
 
   $items = array();
-  if (user_access('administer mailchimp campaign')) {
+  if (user_access('administer mailchimp')) {
     $items[] = l(t('Delete'), 'mailchimp-campaign/' . $cid . '/delete/' . drupal_get_token('mailchimp_campaign'));
   }
   $items[] = l(t('Update'), 'mailchimp-campaign/' . $cid . '/update/' . drupal_get_token('mailchimp_campaign'));
@@ -317,7 +313,7 @@ function mailchimp_campaign_create_form($form, &$form_state) {
     '#default_value' => check_plain($node->title),
     '#required' => TRUE,
   );
-  if (user_access('administer mailchimp campaign')) {
+  if (user_access('administer mailchimp')) {
     mailchimp_campaign_settings_form(&$form, $defaults);
   }
   $form['mailchimp_campaign']['create'] = array(
