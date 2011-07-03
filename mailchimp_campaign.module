@@ -20,6 +20,16 @@ function mailchimp_campaign_permission() {
  * Implements hook_menu().
  */
 function mailchimp_campaign_menu() {
+  $items['admin/config/services/mailchimp/campaigns'] = array(
+    'title' => 'Campaign settings',
+    'description' => 'Manage sitewide default MailChimp Campaigns settings.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mailchimp_campaign_admin_form'),
+    'access arguments' => array('administer mailchimp campaign'),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'mailchimp_campaign.admin.inc',
+    'weight' => 10
+  );
   $items['node/%node/mailchimp-campaigns'] = array(
     'title' => 'MailChimp campaigns',
     'page callback' => 'mailchimp_campaign_node_campaigns_list',
@@ -147,6 +157,7 @@ function mailchimp_campaign_form_node_type_form_alter(&$form, $form_state) {
  */
 function mailchimp_campaign_form_node_type_form_validate($form, &$form_state) {
   module_load_include('inc', 'mailchimp_campaign', 'mailchimp_campaign.settings');
+  $form_state['defaults'] = variable_get('mailchimp_campaign', FALSE);
 
   $values = $form_state['values']['mailchimp_campaign'];
   if ($values['enabled'] && !$values['list_id']) {
