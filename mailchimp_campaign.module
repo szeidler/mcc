@@ -119,59 +119,26 @@ function mailchimp_campaign_theme($existing, $type, $theme, $path) {
 
 /**
  * Implements hook_form_FORM_ID_alter().
- * Put MailChimp campaign module setting to the node type edit form.
+ * MailChimp Campaign module settings on node type edit form.
  */
 function mailchimp_campaign_form_node_type_form_alter(&$form, $form_state) {
-  if (isset($form['type']) && user_access('administer mailchimp campaign')) {
-    $defaults = variable_get('mailchimp_campaign_node_type_settings_' . $form['#node_type']->type, FALSE);
-    $form['mailchimp_campaign'] = array(
-      '#type' => 'fieldset',
-      '#title' => t('MailChimp campaign'),
-      '#group' => 'additional_settings',
-      '#tree' => TRUE,
-    );
-    $form['mailchimp_campaign']['enabled'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Enable MailChimp campaigns'),
-      '#default_value' => $defaults ? $defaults['enabled'] : FALSE,
-    );
-    $form['mailchimp_campaign']['list_id'] = array(
-      '#type' => 'select',
-      '#title' => t('Default list'),
-      '#default_value' => $defaults ? $defaults['list_id'] : FALSE,
-      '#options' => _mailchimp_campaign_lists_options(),
-    );
-    $form['mailchimp_campaign']['from_name'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Defaul from name'),
-      '#default_value' => $defaults ? $defaults['from_name'] : '',
-    );
-    $form['mailchimp_campaign']['from_email'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Default from email'),
-      '#default_value' => $defaults ? $defaults['from_email'] : variable_get('site_mail', FALSE),
-    );
-    $form['mailchimp_campaign']['template_id'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Default template ID'),
-      '#description' => t('Default template for the content type. Leave blank to reset to system defauts.'),
-      '#default_value' => $defaults ? $defaults['template_id'] : '1000188',
-    );
-    $form['mailchimp_campaign']['title_section'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Default title section in the template.'),
-      '#default_value' => $defaults ? $defaults['title_section'] : 'header_content',
-      '#description' => t('Leave blank to reset the system defauts.'),
-    );
-    $form['mailchimp_campaign']['body_section'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Default body section in the template.'),
-      '#default_value' => $defaults ? $defaults['body_section'] : 'std_content00',
-      '#description' => t('Leave blank to reset the system defauts.'),
-    );
-    $form['#validate'][] = 'mailchimp_campaign_form_node_type_form_validate';
-    $form['#submit'][] = 'mailchimp_campaign_form_node_type_form_submit';
-  }
+  module_load_include('inc', 'mailchimp_campaign', 'mailchimp_campaign.settings');
+  $defaults = variable_get('mailchimp_campaign_node_type_settings_' . $form['#node_type']->type, FALSE);
+
+  $form['mailchimp_campaign'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('MailChimp campaign'),
+    '#group' => 'additional_settings',
+    '#tree' => TRUE,
+  );
+  $form['mailchimp_campaign']['enabled'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable MailChimp campaigns'),
+    '#default_value' => $defaults ? $defaults['enabled'] : FALSE,
+  );
+  mailchimp_campaign_settings_form(&$form, $defaults);
+  $form['#validate'][] = 'mailchimp_campaign_form_node_type_form_validate';
+  $form['#submit'][] = 'mailchimp_campaign_form_node_type_form_submit';
 }
 
 /**
@@ -341,72 +308,33 @@ function theme_mailchimp_campaign_actions($variables) {
  * Form for create MailChimp campaign, from node content.
  */
 function mailchimp_campaign_create_form($form, &$form_state) {
+  module_load_include('inc', 'mailchimp_campaign', 'mailchimp_campaign.settings');
   $node = $form_state['build_info']['args'][0];
   $defaults = variable_get('mailchimp_campaign_node_type_settings_' . $node->type, FALSE);
 
-  $form['mailchimp_campaign_create'] = array(
+  $form['mailchimp_campaign'] = array(
     '#type' => 'fieldset',
     '#title' => t('Create new MailChimp campaign'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
     '#tree' => TRUE,
   );
-  $form['mailchimp_campaign_create']['subject'] = array(
+  $form['mailchimp_campaign']['subject'] = array(
     '#type' => 'textfield',
     '#title' => t('Mail subject'),
     '#default_value' =>  check_plain($node->title) . ' - ' . variable_get('site_name', FALSE),
     '#required' => TRUE,
   );
-  $form['mailchimp_campaign_create']['campaign_title'] = array(
+  $form['mailchimp_campaign']['campaign_title'] = array(
     '#type' => 'textfield',
     '#title' => t('Campaign title'),
     '#default_value' => check_plain($node->title),
     '#required' => TRUE,
   );
-
-  $form['mailchimp_campaign_create']['list_id'] = array(
-    '#type' => 'select',
-    '#title' => t('List'),
-    '#default_value' => $defaults ? $defaults['list_id'] : FALSE,
-    '#options' => _mailchimp_campaign_lists_options(),
-    '#access' => user_access('administer mailchimp campaign'),
-  );
-  $form['mailchimp_campaign_create']['from_name'] = array(
-    '#type' => 'textfield',
-    '#title' => t('From name'),
-    '#default_value' => $defaults ? $defaults['from_name'] : '',
-    '#description' => t('Leave blank to reset the content type defauts.'),
-    '#access' => user_access('administer mailchimp campaign'),
-  );
-  $form['mailchimp_campaign_create']['from_email'] = array(
-    '#type' => 'textfield',
-    '#title' => t('From email'),
-    '#default_value' => $defaults ? $defaults['from_email'] : variable_get('site_mail', FALSE),
-    '#description' => t('Leave blank to reset the content type defauts.'),
-    '#access' => user_access('administer mailchimp campaign'),
-  );
-  $form['mailchimp_campaign_create']['template_id'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Template ID'),
-    '#description' => t('Template ID for tihs campaign. Leave blank to reset the content type default.'),
-    '#default_value' => $defaults ? $defaults['template_id'] : '1000188',
-    '#access' => user_access('administer mailchimp campaign'),
-  );
-  $form['mailchimp_campaign_create']['title_section'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Title section'),
-    '#default_value' => $defaults ? $defaults['title_section'] : 'header_content',
-    '#description' => t('Leave blank to reset the content type defauts.'),
-    '#access' => user_access('administer mailchimp campaign'),
-  );
-  $form['mailchimp_campaign_create']['body_section'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Content section'),
-    '#default_value' => $defaults ? $defaults['body_section'] : 'std_content00',
-    '#description' => t('Leave blank to reset the content type defauts.'),
-    '#access' => user_access('administer mailchimp campaign'),
-  );
-  $form['mailchimp_campaign_create']['create'] = array(
+  if (user_access('administer mailchimp campaign')) {
+    mailchimp_campaign_settings_form(&$form, $defaults);
+  }
+  $form['mailchimp_campaign']['create'] = array(
     '#type' => 'submit',
     '#value' => t('Create new campaign from node'),
   );
@@ -420,42 +348,42 @@ function mailchimp_campaign_create_form($form, &$form_state) {
 function mailchimp_campaign_create_form_validate($form, &$form_state) {
   $node = $form_state['build_info']['args'][0];
   $defaults = variable_get('mailchimp_campaign_node_type_settings_' . $node->type, FALSE);
-  $values = $form_state['values']['mailchimp_campaign_create'];
+  $values = $form_state['values']['mailchimp_campaign'];
 
   if (empty($values['list_id'])) {
-    form_set_error('mailchimp_campaign_create][list_id', t('Select a List!'));
+    form_set_error('mailchimp_campaign][list_id', t('Select a List!'));
   }
 
   if (empty($values['from_name'])) {
-    $form_state['values']['mailchimp_campaign_create']['from_name'] = $defaults['from_name'];
+    $form_state['values']['mailchimp_campaign']['from_name'] = $defaults['from_name'];
   }
 
   if (empty($values['from_email'])) {
-    $form_state['values']['mailchimp_campaign_create']['from_email'] = $defaults['from_email'];
+    $form_state['values']['mailchimp_campaign']['from_email'] = $defaults['from_email'];
   }
   else if (!valid_email_address($values['from_email'])) {
-    form_set_error('mailchimp_campaign_create][from_email', t('From email is not valid.'));
+    form_set_error('mailchimp_campaign][from_email', t('From email is not valid.'));
   }
 
   if (empty($values['template_id'])) {
-    $form_state['values']['mailchimp_campaign_create']['template_id'] = $defaults['template_id'];
+    $form_state['values']['mailchimp_campaign']['template_id'] = $defaults['template_id'];
   }
   else if (!is_numeric($values['template_id'])) {
-    form_set_error('mailchimp_campaign_create][template_id', t('Template ID must be numeric.'));
+    form_set_error('mailchimp_campaign][template_id', t('Template ID must be numeric.'));
   }
 
   if (empty($values['title_section'])) {
-    $form_state['values']['mailchimp_campaign_create']['title_section'] = $defaults['title_section'];
+    $form_state['values']['mailchimp_campaign']['title_section'] = $defaults['title_section'];
   }
   else if (!preg_match('/^[a-zA-Z0-9_]*$/', $values['title_section'])) {
-    form_set_error('mailchimp_campaign_create][title_section', t('Not valid title section.'));
+    form_set_error('mailchimp_campaign][title_section', t('Not valid title section.'));
   }
 
   if (empty($values['body_section'])) {
-    $form_state['values']['mailchimp_campaign_create']['body_section'] = $defaults['body_section'];
+    $form_state['values']['mailchimp_campaign']['body_section'] = $defaults['body_section'];
   }
   else if (!preg_match('/^[a-zA-Z0-9_]*$/', $values['body_section'])) {
-    form_set_error('mailchimp_campaign_create][body_section', t('Not valid body section.'));
+    form_set_error('mailchimp_campaign][body_section', t('Not valid body section.'));
   }
 }
 
@@ -465,7 +393,7 @@ function mailchimp_campaign_create_form_validate($form, &$form_state) {
 function mailchimp_campaign_create_form_submit($form, $form_state) {
   if (isset($form_state['build_info']['args'][0]->nid)) {
     $node = $form_state['build_info']['args'][0];
-    mailchimp_campaign_create($node, $form_state['values']['mailchimp_campaign_create']);
+    mailchimp_campaign_create($node, $form_state['values']['mailchimp_campaign']);
   }
 }
 
