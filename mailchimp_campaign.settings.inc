@@ -62,32 +62,32 @@ function mailchimp_campaign_settings_form_validate($form, &$form_state) {
   }
   $values = $form_state['values']['mailchimp_campaign'];
 
-  if (empty($values['from_name'])) {
+  if ($values['from_name'] == '') {
     $form_state['values']['mailchimp_campaign']['from_name'] = $defaults ? $defaults['from_name'] : variable_get('site_name', 'Drupal');
   }
 
-  if (empty($values['from_email'])) {
+  if ($values['from_email'] == '') {
     $form_state['values']['mailchimp_campaign']['from_email'] = $defaults ? $defaults['from_email'] : variable_get('site_mail', FALSE);
   }
   else if (!valid_email_address($values['from_email'])) {
     form_set_error('mailchimp_campaign][from_email', t('From email is not valid.'));
   }
 
-  if (empty($values['template_id'])) {
+  if ($values['template_id'] == '') {
     $form_state['values']['mailchimp_campaign']['template_id'] = $defaults ? $defaults['template_id'] : MAILCHIMP_CAMPAIGN_DEFAULT_TEMPLATE;
   }
   else if (!is_numeric($values['template_id'])) {
     form_set_error('mailchimp_campaign][template_id', t('Template ID must be numeric.'));
   }
 
-  if (empty($values['title_section'])) {
+  if ($values['title_section'] == '') {
     $form_state['values']['mailchimp_campaign']['title_section'] = $defaults ? $defaults['title_section'] : MAILCHIMP_CAMPAIGN_DEFAULT_TITLE_SECTION;
   }
   else if (!preg_match('/^[a-zA-Z0-9_]*$/', $values['title_section'])) {
     form_set_error('mailchimp_campaign][title_section', t('Not valid title section.'));
   }
 
-  if (empty($values['body_section'])) {
+  if ($values['body_section'] == '') {
     $form_state['values']['mailchimp_campaign']['body_section'] = $defaults ? $defaults['body_section'] : MAILCHIMP_CAMPAIGN_DEFAULT_BODY_SECTION;
   }
   else if (!preg_match('/^[a-zA-Z0-9_]*$/', $values['body_section'])) {
