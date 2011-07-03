@@ -30,7 +30,8 @@ function mailchimp_campaign_menu() {
     'title' => 'MailChimp campaigns',
     'page callback' => 'mailchimp_campaign_node_campaigns_list',
     'page arguments' => array(1),
-    'access arguments' => array('send mailchimp campaign'),
+    'access callback' => 'mailchimp_campaign_node_campaigns_access',
+    'access arguments' => array(1, 'send mailchimp campaign'),
     'type' => MENU_LOCAL_TASK,
   );
   $items['mailchimp-campaign/%mailchimp_campaign/update/%'] = array(
@@ -67,6 +68,20 @@ function mailchimp_campaign_load($cid) {
     ->condition('cid', $cid)
     ->execute()
     ->fetchAssoc();
+}
+
+/**
+ * Access callback for node campaigns.
+ */
+function mailchimp_campaign_node_campaigns_access($node, $permission) {
+  if (user_access($permission)) {
+    $settings = variable_get('mailchimp_campaign_node_type_settings_' . $node->type, FALSE);
+    if ($settings && $settings['enabled']) {
+      return TRUE;
+    }
+  }
+
+  return FALSE;
 }
 
 /**
