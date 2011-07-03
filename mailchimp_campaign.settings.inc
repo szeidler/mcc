@@ -10,7 +10,7 @@ define('MAILCHIMP_CAMPAIGN_DEFAULT_TITLE_SECTION', 'header_content');
 define('MAILCHIMP_CAMPAIGN_DEFAULT_BODY_SECTION', 'std_content00');
 
 /**
- * Return a form for campaign settings.
+ * Return a form for general campaign settings.
  */
 function mailchimp_campaign_settings_form(&$form, $defaults) {
   $form['mailchimp_campaign']['list_id'] = array(
@@ -34,19 +34,19 @@ function mailchimp_campaign_settings_form(&$form, $defaults) {
     '#type' => 'textfield',
     '#title' => t('Template ID'),
     '#default_value' => $defaults ? $defaults['template_id'] : MAILCHIMP_CAMPAIGN_DEFAULT_TEMPLATE,
-    '#description' => t('MailChimp template for the campaign. Leave blank to reset to defauts.'),
+    '#description' => t('MailChimp template for the campaign. Leave blank to reset to defaults.'),
   );
   $form['mailchimp_campaign']['title_section'] = array(
     '#type' => 'textfield',
     '#title' => t('Title section'),
     '#default_value' => $defaults ? $defaults['title_section'] : MAILCHIMP_CAMPAIGN_DEFAULT_TITLE_SECTION,
-    '#description' => t('Title section in the template. Leave blank to reset to defauts.'),
+    '#description' => t('Title section in the template. Leave blank to reset to defaults.'),
   );
   $form['mailchimp_campaign']['body_section'] = array(
     '#type' => 'textfield',
     '#title' => t('Body section'),
     '#default_value' => $defaults ? $defaults['body_section'] : MAILCHIMP_CAMPAIGN_DEFAULT_BODY_SECTION,
-    '#description' => t('Body section in the template. Leave blank to reset to defauts.'),
+    '#description' => t('Body section in the template. Leave blank to reset to defaults.'),
   );
 }
 
