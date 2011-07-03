@@ -34,6 +34,14 @@ function mailchimp_campaign_menu() {
     'access arguments' => array(1, 'send mailchimp campaign'),
     'type' => MENU_LOCAL_TASK,
   );
+  $items['node/%node/mailchimp-campaigns/create'] = array(
+    'title' => 'Create new campaign',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mailchimp_campaign_create_form', 1),
+    'access callback' => 'mailchimp_campaign_node_campaigns_access',
+    'access arguments' => array(1, 'send mailchimp campaign'),
+    'type' => MENU_LOCAL_ACTION,
+  );
   $items['mailchimp-campaign/%mailchimp_campaign/update/%'] = array(
     'title' => 'Update',
     'page callback' => 'mailchimp_campaign_menu_operations',
@@ -234,11 +242,6 @@ function mailchimp_campaign_node_campaigns_list($node) {
       $content .= '<h2>' . t('MailChimp campaigns for this content') . '</h2>';
       $content .= theme('mailchimp_campaign_node_campaigns_list', array('node_campaigns' => $node_campaigns));
     }
-
-    $content .= drupal_render(drupal_get_form('mailchimp_campaign_create_form', $node));
-
-    $content .= '<h2>' . t('Campaign content preview') . '</h2>';
-    $content .= _mailchimp_campaign_body($node);
   }
   else {
     $content .= t('MailChimp campaigns are not enabled for this node type.');
@@ -258,9 +261,9 @@ function theme_mailchimp_campaign_node_campaigns_list($variables) {
     $row = array();
     $row[] = $cid; // ID
     if ($campaign['data']) {
-      $row[] = $campaign['data']['title']; // Title
+      $row[] = check_plain($campaign['data']['title']); // Title
       $row[] = _mailchimp_campaign_list_name($campaign['data']['list_id']); // List
-      $row[] = $campaign['data']['status']; // Status
+      $row[] = check_plain($campaign['data']['status']); // Status
       $row[] = theme('mailchimp_campaign_mclinks', array('data' => $campaign['data'])); // MC links
     }
     else {
@@ -322,23 +325,35 @@ function mailchimp_campaign_create_form($form, &$form_state) {
   $node = $form_state['build_info']['args'][0];
   $defaults = variable_get('mailchimp_campaign_node_type_settings_' . $node->type, FALSE);
 
+  $form = array();
+  $form['mailchimp_campaign_preview'] = array(
+   '#type' => 'fieldset',
+   '#title' => t('Campaign content preview'),
+   '#collapsible' => TRUE,
+   '#collapsed' => TRUE,
+  );
+  $form['mailchimp_campaign_preview']['preview'] = array(
+    '#type' => 'item',
+    '#title' => check_plain($node->title),
+    '#markup' => _mailchimp_campaign_body($node),
+  );
   $form['mailchimp_campaign'] = array(
     '#type' => 'fieldset',
     '#title' => t('Create new MailChimp campaign'),
     '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
+    '#collapsed' => FALSE,
     '#tree' => TRUE,
   );
   $form['mailchimp_campaign']['subject'] = array(
     '#type' => 'textfield',
     '#title' => t('Mail subject'),
-    '#default_value' =>  check_plain($node->title) . ' - ' . variable_get('site_name', FALSE),
+    '#default_value' =>  $node->title . ' - ' . variable_get('site_name', FALSE),
     '#required' => TRUE,
   );
   $form['mailchimp_campaign']['campaign_title'] = array(
     '#type' => 'textfield',
     '#title' => t('Campaign title'),
-    '#default_value' => check_plain($node->title),
+    '#default_value' => $node->title,
     '#required' => TRUE,
   );
   if (user_access('administer mailchimp')) {
