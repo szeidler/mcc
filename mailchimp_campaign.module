@@ -37,7 +37,7 @@ function mailchimp_campaign_menu() {
     'title' => 'Update',
     'page callback' => 'mailchimp_campaign_menu_operations',
     'page arguments' => array(1, 2),
-    'access callback' => 'mailchimp_campaign_access',
+    'access callback' => 'mailchimp_campaign_menu_operations_access',
     'access arguments' => array(3, 'send mailchimp campaign'),
     'type' => MENU_CALLBACK,
   );
@@ -45,7 +45,7 @@ function mailchimp_campaign_menu() {
     'title' => 'Send',
     'page callback' => 'mailchimp_campaign_menu_operations',
     'page arguments' => array(1, 2),
-    'access callback' => 'mailchimp_campaign_access',
+    'access callback' => 'mailchimp_campaign_menu_operations_access',
     'access arguments' => array(3, 'send mailchimp campaign'),
     'type' => MENU_CALLBACK,
   );
@@ -53,7 +53,7 @@ function mailchimp_campaign_menu() {
     'title' => 'Delete',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('mailchimp_campaign_delete_form', 1),
-    'access callback' => 'mailchimp_campaign_access',
+    'access callback' => 'mailchimp_campaign_menu_operations_access',
     'access arguments' => array(3, 'administer mailchimp'),
     'type' => MENU_CALLBACK,
   );
@@ -70,9 +70,9 @@ function mailchimp_campaign_load($cid) {
 }
 
 /**
- * Access callback for menu items.
+ * Access callback for menu operations.
  */
-function mailchimp_campaign_access($token, $permission) {
+function mailchimp_campaign_menu_operations_access($token, $permission) {
   if (drupal_valid_token($token, 'mailchimp_campaign') && user_access($permission)) {
     return TRUE;
   }
