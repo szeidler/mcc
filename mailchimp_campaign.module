@@ -258,11 +258,10 @@ function theme_mailchimp_campaign_node_campaigns_list($variables) {
       $row[] = theme('mailchimp_campaign_mclinks', array('data' => $campaign['data'])); // MC links
     }
     else {
-      $ni = '<em>' . t('No available information, please update.') . '</em>';
-      $row[] = $ni;
-      $row[] = $ni;
-      $row[] = $ni;
-      $row[] = $ni;
+      $row[] = array(
+        'data' => '<em>' . t('No available information, please update.') . '</em>',
+        'colspan' => '4',
+      );
     }
     $row[] = format_date($campaign['update_time']); // Last updated
     $row[] = theme('mailchimp_campaign_actions', array('cid' => $campaign['cid'], 'data' => $campaign['data'])); // Actions
