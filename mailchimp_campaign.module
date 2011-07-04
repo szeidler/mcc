@@ -28,7 +28,7 @@ function mailchimp_campaign_menu() {
   );
   $items['node/%node/mailchimp-campaigns'] = array(
     'title' => 'MailChimp campaigns',
-    'page callback' => 'mailchimp_campaign_node_campaigns_list',
+    'page callback' => 'mailchimp_campaign_node_campaigns_page',
     'page arguments' => array(1),
     'access callback' => 'mailchimp_campaign_node_campaigns_access',
     'access arguments' => array(1, 'send mailchimp campaign'),
@@ -212,35 +212,31 @@ function mailchimp_campaign_entity_info_alter(&$entity_info) {
 }
 
 /**
- * Implements hook_node_view().
- * Put MailChimp campaign create and send form to the full node view.
+ * Returns campaigns list. (Associative array for drupal_render()).
  */
-function mailchimp_campaign_node_campaigns_list($node) {
-  $content = '';
-  $settings = variable_get('mailchimp_campaign_node_type_settings_' . $node->type, array());
-  if ($settings['enabled']) {
-    $result = db_select('mailchimp_campaign_node_campaigns', 'm')
-      ->fields('m')
-      ->condition('nid', $node->nid, '=')
-      ->orderBy('update_time', 'DESC')
-      ->execute();
+function mailchimp_campaign_node_campaigns_page($node) {
+  $result = db_select('mailchimp_campaign_node_campaigns', 'm')
+    ->fields('m')
+    ->condition('nid', $node->nid)
+    ->orderBy('update_time', 'DESC')
+    ->execute();
 
-    $node_campaigns = array();
-    while ($row = $result->fetchAssoc()) {
-      if ($row['data']) {
-        $row['data'] = unserialize($row['data']);
-      }
-      $node_campaigns[$row['cid']] = $row;
+  $node_campaigns = array();
+  while ($row = $result->fetchAssoc()) {
+    if ($row['data']) {
+      $row['data'] = unserialize($row['data']);
     }
+    $node_campaigns[$row['cid']] = $row;
+  }
 
-    if (!empty($node_campaigns)) {
-      $content .= '<h2>' . t('MailChimp campaigns for this content') . '</h2>';
-      $content .= theme('mailchimp_campaign_node_campaigns_list', array('node_campaigns' => $node_campaigns));
-    }
-  }
-  else {
-    $content .= t('MailChimp campaigns are not enabled for this node type.');
-  }
+  $content['title'] = array(
+    '#markup' => '<h2>' . t('MailChimp campaigns for %title', array('%title' => $node->title)) . '</h2>',
+  );
+
+  $content['campaign_list'] = array(
+    '#theme' => 'mailchimp_campaign_node_campaigns_list',
+    '#node_campaigns' => $node_campaigns,
+  );
 
   return $content;
 }
