@@ -417,9 +417,7 @@ function mailchimp_campaign_delete_form_submit($form, &$form_state) {
  * Create MailChimp campaign from a node.
  */
 function mailchimp_campaign_create($node, $settings) {
-  global $base_url;
   $mcapi = mailchimp_get_api_object();
-  $type = 'regular';
   $options = array(
     'list_id' => $settings['list_id'],
     'subject' => $settings['subject'],
@@ -445,8 +443,8 @@ function mailchimp_campaign_create($node, $settings) {
     $content['html_' . $settings['body_section']] = $body;
   }
 
-  // Create campaign on MailChimp.
-  $cid = $mcapi->campaignCreate($type, $options, $content);
+  // Create campaign on MailChimp. (Only regular campaigns are supported yet.)
+  $cid = $mcapi->campaignCreate('regular', $options, $content);
 
   if ($mcapi->errorCode) {
     // Display and log error, if any.
