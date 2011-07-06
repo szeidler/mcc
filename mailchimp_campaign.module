@@ -397,7 +397,7 @@ function mailchimp_campaign_delete_form($form, &$form_state) {
     '#default_value' => 'db',
   );
 
-  return confirm_form($form, t('Are you sure you want to delete this campaign: <em>!id</em>', array('!id' => $campaign['data']['title'])), 'node/' . $campaign['nid']. '/mailchimp-campaigns');
+  return confirm_form($form, t('Are you sure you want to delete this campaign: %id', array('%id' => $campaign['data']['title'])), 'node/' . $campaign['nid']. '/mailchimp-campaigns');
 }
 
 /**
@@ -435,7 +435,7 @@ function mailchimp_campaign_create($node, $settings) {
     ),
   );
   $body = _mailchimp_campaign_body($node);
-  $title =  l(check_plain($node->title), 'node/' . $node->nid, array('absolute' => TRUE));
+  $title = l($node->title, 'node/' . $node->nid, array('absolute' => TRUE));
   $content = array();
   if ($settings['title_section'] == $settings['body_section']) {
     $content['html_' . $settings['body_section']] = '<h1>' . $title . '</h1>' . $body;
