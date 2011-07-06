@@ -395,7 +395,11 @@ function mailchimp_campaign_delete_form($form, &$form_state) {
   $campaign['data'] = unserialize($campaign['data']);
   $admin_link = _mailchimp_campaign_mailchimp_admin_link(t('Campaign admin page'), 'campaigns/show', $campaign['data']['web_id']);
 
-  $form['info'] = array('#markup' => '<p>Campaign ID: <em>' . $campaign['cid'] . '</em><br />'. $admin_link . '</p>');
+  $form['info'] = array(
+    '#markup' => t('Campaign ID: %cid', array('%cid' => $campaign['cid'])),
+    '#suffix' => '<br />',
+  );
+  $form['admin_link'] = array('#markup' => $admin_link);
   $form['delete_from'] = array(
     '#type' => 'radios',
     '#title' => t('Delete campaign'),
