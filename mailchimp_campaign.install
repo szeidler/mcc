@@ -7,6 +7,11 @@ function mailchimp_campaign_schema() {
   $schema['mailchimp_campaign_node_campaigns'] = array(
     'description' => 'MailChimp campaigns, created from nodes.',
     'fields' => array(
+      'id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => 'Unique mailchimp_campaign id',
+      ),
       'nid' => array(
         'description' => 'Node ID.',
         'type' => 'int',
@@ -32,6 +37,7 @@ function mailchimp_campaign_schema() {
         'type' => 'text',
         'size' => 'normal',
         'not null' => FALSE,
+        'serialize' => TRUE,
       ),
       'update_time' => array(
         'description' => 'Unix timestamp, when the campaign datas where last updated from MailChimp servers.',
@@ -40,7 +46,24 @@ function mailchimp_campaign_schema() {
         'default' => 0,
       ),
     ),
-    'primary key' => array('cid'),
+    'primary key' => array('id'),
+    'unique keys' => array(
+      'cid' => array('cid'),
+    ),
   );
   return $schema;
+}
+
+function mailchimp_campaign_update_7200() {
+  $spec = array(
+    'type' => 'serial',
+    'not null' => TRUE,
+    'description' => 'Unique mailchimp_campaign id',
+  );
+  $keys_new = array(
+    'primary key' => array('id'),
+  );
+  db_drop_primary_key('mailchimp_campaign_node_campaigns');
+  db_add_unique_key('mailchimp_campaign_node_campaigns', 'cid', array('cid'));
+  db_add_field('mailchimp_campaign_node_campaigns', 'id', $spec, $keys_new);
 }

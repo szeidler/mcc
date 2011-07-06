@@ -4,6 +4,11 @@ package = MailChimp
 core = 7.x
 
 dependencies[] = mailchimp
+dependencies[] = mailchimp_lists
+dependencies[] = entity
 
 files[] = mailchimp_campaign.install
 files[] = mailchimp_campaign.module
+files[] = mailchimp_campaign.admin.inc
+files[] = mailchimp_campaign.settings.inc
+files[] = mailchimp_campaign.entity.inc
