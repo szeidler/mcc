@@ -168,12 +168,21 @@ function mailchimp_campaign_form_node_type_form_alter(&$form, $form_state) {
   mailchimp_campaign_settings_form(&$form, $defaults);
   $form['mailchimp_campaign']['list_id']['#required'] = FALSE;
   // Hide options if MailChimp Campaigns is not enabled for node type.
-  $form['mailchimp_campaign']['list_id']['#states']['visible'][':input[name="mailchimp_campaign[enabled]"]']['checked'] = TRUE;
-  $form['mailchimp_campaign']['from_name']['#states']['visible'][':input[name="mailchimp_campaign[enabled]"]']['checked'] = TRUE;
-  $form['mailchimp_campaign']['from_email']['#states']['visible'][':input[name="mailchimp_campaign[enabled]"]']['checked'] = TRUE;
-  $form['mailchimp_campaign']['template_id']['#states']['visible'][':input[name="mailchimp_campaign[enabled]"]']['checked'] = TRUE;
-  $form['mailchimp_campaign']['title_section']['#states']['visible'][':input[name="mailchimp_campaign[enabled]"]']['checked'] = TRUE;
-  $form['mailchimp_campaign']['body_section']['#states']['visible'][':input[name="mailchimp_campaign[enabled]"]']['checked'] = TRUE;
+  $states = array(
+    '#states' => array(
+      'visible' => array(
+        ':input[name="mailchimp_campaign[enabled]"]' => array(
+          'checked' => TRUE,
+        ),
+      ),
+    ),
+  );
+  $form['mailchimp_campaign']['list_id'] += $states;
+  $form['mailchimp_campaign']['from_name'] += $states;
+  $form['mailchimp_campaign']['from_email'] += $states;
+  $form['mailchimp_campaign']['template_id'] += $states;
+  $form['mailchimp_campaign']['title_section'] += $states;
+  $form['mailchimp_campaign']['body_section'] += $states;
 
   $form['#validate'][] = 'mailchimp_campaign_form_node_type_form_validate';
   $form['#submit'][] = 'mailchimp_campaign_form_node_type_form_submit';
