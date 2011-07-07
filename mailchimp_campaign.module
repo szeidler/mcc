@@ -1,5 +1,7 @@
 <?php
 
+module_load_include('inc', 'mailchimp_campaign', 'mailchimp_campaign.entity');
+
 /**
  * Implements hook_permission().
  */
@@ -460,12 +462,15 @@ function mailchimp_campaign_create($node, $settings) {
   }
   else {
     // Write campaign details to the database.
-    $record = array();
+    $campaign = new stdClass;
+    $campaign->cid = $cid;
+    $campaign->nid = $node->nid;
+    $campaign->vid = $node->vid;
+    $campaign->is_new = TRUE;
+    $campaign->original = TRUE;
+    mailchimp_campaign_save($campaign);
     // Request all campaign datas from MailChimp.
-    $record = mailchimp_campaign_update_campaign($cid, FALSE);
-    $record['nid'] = $node->nid;
-    $record['vid'] = $node->vid;
-    drupal_write_record('mailchimp_campaign_node_campaigns', $record);
+    mailchimp_campaign_update_campaign($cid, TRUE);
 
     $message = t('Campaign was created! (ID: <em>!cid</em>)', array('!cid' => $cid));
 
