@@ -442,10 +442,8 @@ function mailchimp_campaign_create($node, $settings) {
 
   if ($mcapi->errorCode) {
     // Display and log error, if any.
-    $message = t('MailChimp error. The campaign was not created.') . ' ' . _mailchimp_campaign_mcapi_error_message($mcapi);
-
-    drupal_set_message($message, 'error');
-    watchdog('mailchimp_campaign', $message, array(), WATCHDOG_ERROR);
+    $message = 'MailChimp error. The campaign was not created.';
+    _mailchimp_campaign_mcapi_error_message($mcapi, $message);
   }
   else {
     // Write campaign details to the database.
@@ -456,13 +454,15 @@ function mailchimp_campaign_create($node, $settings) {
     $campaign->is_new = TRUE;
     $campaign->original = TRUE;
     mailchimp_campaign_save($campaign);
+
+    // Log action, and notify the user.
+    $message = 'Campaign was created! (ID: %cid)';
+    $variables = array('%cid' => $cid);
+    drupal_set_message(t($message, $variables));
+    watchdog('mailchimp_campaign', $message, $variables);
+
     // Request all campaign datas from MailChimp.
     mailchimp_campaign_update_campaign($cid, TRUE);
-
-    $message = t('Campaign was created! (ID: <em>!cid</em>)', array('!cid' => $cid));
-
-    drupal_set_message($message);
-    watchdog('mailchimp_campaign', $message);
   }
 }
 
@@ -479,11 +479,9 @@ function mailchimp_campaign_update_campaign($cid, $silent = FALSE) {
   $data = $mcapi->campaigns(array('campaign_id' => $cid));
 
   if ($mcapi->errorCode) {
-    // Diplay and log error if any.
-    $message = t('Some error has occured while get datas from MailChimp. Please visit the <em>!mcadmin</em>!', array('!mcadmin' => _mailchimp_campaign_mailchimp_admin_link(t('Campaigns admin page'), 'campaigns/'))) . ' ' . _mailchimp_campaign_mcapi_error_message($mcapi);
-
-    drupal_set_message($message, 'error');
-    watchdog('mailchimp_campaign', $message, array(), WATCHDOG_ERROR);
+    // Display and log error if any.
+    $message = 'Some error has occured while get datas from MailChimp.';
+    _mailchimp_campaign_mcapi_error_message($mcapi, $message);
 
     return FALSE;
   }
@@ -493,10 +491,10 @@ function mailchimp_campaign_update_campaign($cid, $silent = FALSE) {
     // Update campaign.
     mailchimp_campaign_save($campaign);
 
-    $message = t('<em>!title</em> campaign datas was updated.', array('!title' => $data['data'][0]['title']));
-
+    // Log action, and notify the user.
+    $message = 'Campaign datas was updated.';
     if (!$silent) {
-      drupal_set_message($message);
+      drupal_set_message(t($message));
     }
     watchdog('mailchimp_campaign', $message);
 
@@ -515,17 +513,15 @@ function mailchimp_campaign_send($cid) {
 
   if ($mcapi->errorCode) {
     // Display and log error, if any.
-    $message = t('MailChimp error. The campaign was not sent, campaign Id: <em>!cid</em>.', array('!cid' => $cid)) . ' ' . _mailchimp_campaign_mcapi_error_message($mcapi);
-
-    drupal_set_message($message, 'error');
-    watchdog('mailchimp_campaign', $message, array(), WATCHDOG_ERROR);
+    $message = 'MailChimp error. The campaign was not sent.';
+    _mailchimp_campaign_mcapi_error_message($mcapi, $message);
   }
   else {
     // Update campaign details in the database.
     mailchimp_campaign_update_campaign($cid);
 
-    $message = t('MailChimp campaign was sent, campaign Id: <em>!cid</em>.', array('!cid' => $cid));
-
+    // Log action, and notify the user.
+    $message = 'MailChimp campaign was sent.';
     drupal_set_message($message);
     watchdog('mailchimp_campaign', $message);
   }
@@ -542,17 +538,17 @@ function mailchimp_campaign_delete_campaign($cid) {
 
   if ($mcapi->errorCode) {
     // Display and log error, if any.
-    $message = t('MailChimp error. The campaign was not deleted, campaign ID: <em>!cid</em>.', array('!cid' => $cid)) . ' ' . _mailchimp_campaign_mcapi_error_message($mcapi);
-
-    drupal_set_message($message, 'error');
+    $message = 'MailChimp error. The campaign was not deleted.';
+    _mailchimp_campaign_mcapi_error_message($mcapi, $message);
   }
   else {
     // Delete campaign from the database
     mailchimp_campaign_delete($cid);
 
-    $message = t('MailChimp campaign was deleted from MailChimp, campaign ID: <em>!cid</em>.', array('!cid' => $cid));
-
-    drupal_set_message($message);
+    // Log action, and notify the user.
+    $message = 'MailChimp campaign was deleted from MailChimp, campaign ID: %cid.';
+    $variables = array('%cid' => $cid);
+    drupal_set_message(t($message, $variables));
     watchdog('mailchimp_campaign', $message);
   }
 }
@@ -585,10 +581,20 @@ function _mailchimp_campaign_mailchimp_admin_link($text = '', $path = '', $web_i
 }
 
 /**
- * Returns translatable error message text, with MailChimp error.
+ * Set and log error messages after MailChimp API errors.
  */
-function _mailchimp_campaign_mcapi_error_message($mcapi) {
-  return t('MailChimp error code: <em>!errorCode</em>, MailChimp error message: <em>!errorMessage</em>.', array('!errorCode' => $mcapi->errorCode, '!errorMessage' => $mcapi->errorMessage));
+function _mailchimp_campaign_mcapi_error_message($mcapi, $message, $variables = array()) {
+  $mcapiErrorMessage = array(
+    'message' => 'MailChimp error code: %errorCode, MailChimp error message: %errorMessage.',
+    'variables' => array('%errorCode' => $mcapi->errorCode, '%errorMessage' => $mcapi->errorMessage),
+  );
+
+  $human = t($message, $variables)  . ' ' . t($mcapiErrorMessage['message'], $mcapiErrorMessage['variables']);
+  drupal_set_message($human, 'error');
+
+  $watchdog = $message  . ' ' . $mcapiErrorMessage['message'];
+  $variables = $variables + $mcapiErrorMessage['variables'];
+  watchdog('mailchimp_campaign', $watchdog, $variables, WATCHDOG_ERROR);
 }
 
 /**
