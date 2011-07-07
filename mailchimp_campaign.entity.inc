@@ -21,6 +21,13 @@ function mailchimp_campaign_entity_info() {
 }
 
 /**
+ * Saves a campaign.
+ */
+function mailchimp_campaign_save($campaign) {
+  return entity_get_controller('mailchimp_campaign')->save($campaign);
+}
+
+/**
  * Load a campaign by ID.
  */
 function mailchimp_campaign_load($cid) {
@@ -36,11 +43,4 @@ function mailchimp_campaign_load_multiple($campaign_ids = array(), $conditions =
     $campaign_ids = FALSE;
   }
   return entity_load('mailchimp_campaign', $campaign_ids, $conditions, $reset);
-}
-
-/**
- * Saves a campaign.
- */
-function mailchimp_campaign_save($campaign) {
-  return entity_get_controller('mailchimp_campaign')->save($campaign);
 }
