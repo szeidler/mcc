@@ -25,7 +25,7 @@ function mailchimp_campaign_entity_info() {
  */
 function mailchimp_campaign_load($cid) {
   $campaign = mailchimp_campaign_load_multiple(array($cid));
-  return $campaign ? reset($campaign[$cid]) : FALSE;
+  return $campaign ? $campaign[$cid] : FALSE;
 }
 
 /**
@@ -35,7 +35,6 @@ function mailchimp_campaign_load_multiple($campaign_ids = array(), $conditions =
   if (empty($campaign_ids)) {
     $campaign_ids = FALSE;
   }
-
   return entity_load('mailchimp_campaign', $campaign_ids, $conditions, $reset);
 }
 

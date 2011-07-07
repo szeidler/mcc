@@ -103,10 +103,10 @@ function mailchimp_campaign_menu_operations_access($token, $permission) {
 function mailchimp_campaign_menu_operations($campaign, $op) {
   switch ($op) {
     case 'update':
-        mailchimp_campaign_update_campaign($campaign['cid']);
+        mailchimp_campaign_update_campaign($campaign->cid);
       break;
     case 'send':
-        mailchimp_campaign_send($campaign['cid']);
+        mailchimp_campaign_send($campaign->cid);
       break;
   }
 
@@ -117,7 +117,7 @@ function mailchimp_campaign_menu_operations($campaign, $op) {
   }
   // Define new destination to avoid infinite loop.
   else {
-    $destination = 'node/' . $campaign['nid'] . '/mailchimp-campaigns';
+    $destination = 'node/' . $campaign->nid . '/mailchimp-campaigns';
   }
 
   drupal_goto($destination);
