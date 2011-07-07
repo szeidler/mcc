@@ -482,16 +482,14 @@ function mailchimp_campaign_create($node, $settings) {
 /**
  * Update campaign datas in the database.
  */
-function mailchimp_campaign_update_campaign($cid, $update = TRUE) {
+function mailchimp_campaign_update_campaign($cid, $silent = FALSE) {
   $mcapi = mailchimp_get_api_object();
-
-  $record = array(
-    'cid' => $cid,
-    'update_time' => REQUEST_TIME,
-  );
+  $campaign = new stdClass;
+  $campaign->cid = $cid;
+  $campaign->update_time = REQUEST_TIME;
 
   // Request all datas from the campaign.
-  $campaign = $mcapi->campaigns(array('campaign_id' => $cid));
+  $data = $mcapi->campaigns(array('campaign_id' => $cid));
 
   if ($mcapi->errorCode) {
     // Diplay and log error if any.
@@ -499,22 +497,24 @@ function mailchimp_campaign_update_campaign($cid, $update = TRUE) {
 
     drupal_set_message($message, 'error');
     watchdog('mailchimp_campaign', $message, array(), WATCHDOG_ERROR);
+
+    return FALSE;
   }
   else {
-    $record['data'] = serialize($campaign['data'][0]);
+    $campaign->data = $data['data'][0];
 
-    if ($update) {
-      // Update record.
-      drupal_write_record('mailchimp_campaign_node_campaigns', $record, array('cid'));
+    // Update campaign.
+    mailchimp_campaign_save($campaign);
 
-      $message = t('<em>!title</em> campaign datas was updated.', array('!title' => $campaign['data'][0]['title']));
+    $message = t('<em>!title</em> campaign datas was updated.', array('!title' => $data['data'][0]['title']));
 
+    if (!$silent) {
       drupal_set_message($message);
-      watchdog('mailchimp_campaign', $message);
     }
-  }
+    watchdog('mailchimp_campaign', $message);
 
-  return $record;
+    return TRUE;
+  }
 }
 
 /**
