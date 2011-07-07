@@ -46,6 +46,27 @@ function mailchimp_campaign_load_multiple($campaign_ids = array(), $conditions =
 }
 
 /**
+ * Loads campaigns attached to specific nodes.
+ */
+function mailchimp_campaign_load_by_nid($nid, $vid = FALSE) {
+  $query = new EntityFieldQuery();
+  $entities = $query->entityCondition('entity_type', 'mailchimp_campaign')
+    ->propertyCondition('nid', $nid);
+
+  if ($vid) {
+    $entities = $entities->propertyCondition('vid', $vid);
+  }
+
+  $entities = $entities->propertyOrderBy('update_time', 'DESC')
+    ->execute();
+
+  foreach ($entities['mailchimp_campaign'] as $entity) {
+    $campaign_ids[] = $entity->cid;
+  }
+  return mailchimp_campaign_load_multiple($campaign_ids);
+}
+
+/**
  * Delete a campaign.
  */
 function mailchimp_campaign_delete($cid) {

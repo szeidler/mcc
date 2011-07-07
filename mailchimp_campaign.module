@@ -218,19 +218,7 @@ function mailchimp_campaign_entity_info_alter(&$entity_info) {
  * Returns campaigns list. (Associative array for drupal_render()).
  */
 function mailchimp_campaign_node_campaigns_page($node) {
-  $result = db_select('mailchimp_campaign_node_campaigns', 'm')
-    ->fields('m')
-    ->condition('nid', $node->nid)
-    ->orderBy('update_time', 'DESC')
-    ->execute();
-
-  $node_campaigns = array();
-  while ($row = $result->fetchAssoc()) {
-    if ($row['data']) {
-      $row['data'] = unserialize($row['data']);
-    }
-    $node_campaigns[$row['cid']] = $row;
-  }
+  $node_campaigns = mailchimp_campaign_load_by_nid($node->nid);
 
   $content['title'] = array(
     '#markup' => '<h2>' . t('MailChimp campaigns for %title', array('%title' => $node->title)) . '</h2>',
@@ -254,11 +242,11 @@ function theme_mailchimp_campaign_node_campaigns_list($variables) {
   foreach ($node_campaigns as $cid => $campaign) {
     $row = array();
     $row[] = $cid; // ID
-    if ($campaign['data']) {
-      $row[] = check_plain($campaign['data']['title']); // Title
-      $row[] = _mailchimp_campaign_list_name($campaign['data']['list_id']); // List
-      $row[] = check_plain($campaign['data']['status']); // Status
-      $row[] = theme('mailchimp_campaign_mclinks', array('data' => $campaign['data'])); // MC links
+    if ($campaign->data) {
+      $row[] = check_plain($campaign->data['title']); // Title
+      $row[] = _mailchimp_campaign_list_name($campaign->data['list_id']); // List
+      $row[] = check_plain($campaign->data['status']); // Status
+      $row[] = theme('mailchimp_campaign_mclinks', array('data' => $campaign->data)); // MC links
     }
     else {
       $row[] = array(
@@ -266,8 +254,8 @@ function theme_mailchimp_campaign_node_campaigns_list($variables) {
         'colspan' => '4',
       );
     }
-    $row[] = format_date($campaign['update_time']); // Last updated
-    $row[] = theme('mailchimp_campaign_actions', array('cid' => $campaign['cid'], 'data' => $campaign['data'])); // Actions
+    $row[] = format_date($campaign->update_time); // Last updated
+    $row[] = theme('mailchimp_campaign_actions', array('cid' => $campaign->cid, 'data' => $campaign->data)); // Actions
 
     $rows[] = $row;
   }
