@@ -374,7 +374,6 @@ function mailchimp_campaign_create_form_submit($form, $form_state) {
  */
 function mailchimp_campaign_delete_form($form, &$form_state) {
   $campaign = $form_state['build_info']['args'][0];
-  dpm($campaign);
   $admin_link = _mailchimp_campaign_mailchimp_admin_link(t('Campaign admin page'), 'campaigns/show', $campaign->data['web_id']);
 
   $form['info'] = array(
@@ -404,7 +403,7 @@ function mailchimp_campaign_delete_form_submit($form, &$form_state) {
     mailchimp_campaign_delete_campaign($campaign->cid);
   }
   else {
-    _mailchimp_campaign_delete_form_database($campaign->cid);
+    mailchimp_campaign_delete($campaign->cid);
   }
 }
 
