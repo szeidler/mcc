@@ -12,9 +12,36 @@ function mailchimp_campaign_entity_info() {
       'uri callback' => 'mailchimp_campaign_uri',
       'fieldable' => FALSE,
       'entity keys' => array(
-        'id' => 'id',
+        'id' => 'cid',
+        'label' => 'label',
       ),
     ),
   );
   return $return;
+}
+
+/**
+ * Load a campaign by ID.
+ */
+function mailchimp_campaign_load($cid) {
+  $campaign = mailchimp_campaign_load_multiple(array($cid));
+  return $campaign ? reset($campaign[$cid]) : FALSE;
+}
+
+/**
+ * Loads multiple campaigns.
+ */
+function mailchimp_campaign_load_multiple($campaign_ids = array(), $conditions = array(), $reset = FALSE) {
+  if (empty($campaign_ids)) {
+    $campaign_ids = FALSE;
+  }
+
+  return entity_load('mailchimp_campaign', $campaign_ids, $conditions, $reset);
+}
+
+/**
+ * Saves a campaign.
+ */
+function mailchimp_campaign_save($campaign) {
+  return entity_get_controller('mailchimp_campaign')->save($campaign);
 }

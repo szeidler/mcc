@@ -70,14 +70,6 @@ function mailchimp_campaign_menu() {
   return $items;
 }
 
-function mailchimp_campaign_load($cid) {
-  return db_select('mailchimp_campaign_node_campaigns', 'm')
-    ->fields('m')
-    ->condition('cid', $cid)
-    ->execute()
-    ->fetchAssoc();
-}
-
 /**
  * Access callback for node campaigns.
  */
