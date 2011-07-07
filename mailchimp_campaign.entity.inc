@@ -44,3 +44,17 @@ function mailchimp_campaign_load_multiple($campaign_ids = array(), $conditions =
   }
   return entity_load('mailchimp_campaign', $campaign_ids, $conditions, $reset);
 }
+
+/**
+ * Delete a campaign.
+ */
+function mailchimp_campaign_delete($cid) {
+  return mailchimp_campaign_delete_multiple(array($cid));
+}
+
+/**
+ * Delete multiple campaigns.
+ */
+function mailchimp_campaign_delete_multiple($campaign_ids) {
+  return entity_get_controller('mailchimp_campaign')->delete($campaign_ids);
+}
