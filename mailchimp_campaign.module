@@ -599,6 +599,7 @@ function _mailchimp_campaign_mcapi_error_message($mcapi, $message, $variables = 
 
 /**
  * Returns an array of mailing lists, for option values.
+ * TODO: return with the list registered by the mailchimp_lists module
  */
 function _mailchimp_campaign_lists_options() {
   $lists = mailchimp_get_lists();
