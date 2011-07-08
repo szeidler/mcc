@@ -584,16 +584,14 @@ function _mailchimp_campaign_mailchimp_admin_link($text = '', $path = '', $web_i
  * Set and log error messages after MailChimp API errors.
  */
 function _mailchimp_campaign_mcapi_error_message($mcapi, $message, $variables = array()) {
-  $mcapiErrorMessage = array(
-    'message' => 'MailChimp error code: %errorCode, MailChimp error message: %errorMessage.',
-    'variables' => array('%errorCode' => $mcapi->errorCode, '%errorMessage' => $mcapi->errorMessage),
-  );
+  $mcapiErrorMessage = 'MailChimp error code: %errorCode, MailChimp error message: %errorMessage.';
+  $mcapiErrorVariables = array('%errorCode' => $mcapi->errorCode, '%errorMessage' => $mcapi->errorMessage);
 
-  $human = t($message, $variables)  . ' ' . t($mcapiErrorMessage['message'], $mcapiErrorMessage['variables']);
+  $human = t($message, $variables)  . ' ' . t($mcapiErrorMessage, $mcapiErrorVariables);
   drupal_set_message($human, 'error');
 
-  $watchdog = $message  . ' ' . $mcapiErrorMessage['message'];
-  $variables = $variables + $mcapiErrorMessage['variables'];
+  $watchdog = $message  . ' ' . $mcapiErrorMessage;
+  $variables = $variables + $mcapiErrorVariables;
   watchdog('mailchimp_campaign', $watchdog, $variables, WATCHDOG_ERROR);
 }
 
