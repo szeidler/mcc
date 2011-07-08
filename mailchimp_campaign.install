@@ -42,6 +42,16 @@ function mailchimp_campaign_schema() {
       ),
     ),
     'primary key' => array('cid'),
+    'indexes' => array(
+      'node_campaigns' => array('nid', 'vid'),
+    ),
   );
   return $schema;
+}
+
+/**
+ * Add index for nid/vid to 'mailchimp_campaign_node_campaigns' table.
+ */
+function mailchimp_campaign_update_7200() {
+  db_add_index('mailchimp_campaign_node_campaigns', 'node_campaigns', array('nid', 'vid'));
 }
