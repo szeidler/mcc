@@ -13,7 +13,6 @@ function mailchimp_campaign_entity_info() {
       'fieldable' => FALSE,
       'entity keys' => array(
         'id' => 'cid',
-        'label' => 'label',
       ),
     ),
   );
