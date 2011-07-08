@@ -135,7 +135,7 @@ function mailchimp_campaign_theme($existing, $type, $theme, $path) {
       'variables' => array('data' => NULL),
     ),
     'mailchimp_campaign_actions' => array(
-      'variables' => array('cid' => NULL, 'data' => NULL),
+      'variables' => array('campaign' => NULL),
     ),
   );
 }
@@ -255,7 +255,7 @@ function theme_mailchimp_campaign_node_campaigns_list($variables) {
       );
     }
     $row[] = format_date($campaign->update_time); // Last updated
-    $row[] = theme('mailchimp_campaign_actions', array('cid' => $campaign->cid, 'data' => $campaign->data)); // Actions
+    $row[] = theme('mailchimp_campaign_actions', array('campaign' => $campaign)); // Actions
 
     $rows[] = $row;
   }
@@ -283,16 +283,19 @@ function theme_mailchimp_campaign_mclinks($variables) {
  * Returns action (update/send) links.
  */
 function theme_mailchimp_campaign_actions($variables) {
-  $data = $variables['data'];
-  $cid = $variables['cid'];
+  $data = $variables['campaign']->data;
+  $cid = $variables['campaign']->cid;
+  $nid = $variables['campaign']->nid;
+  $destination = array('query' => array('destination' => 'node/' . $nid . '/mailchimp-campaigns'));
+  dpm($variables);
 
   $items = array();
   if (user_access('administer mailchimp')) {
-    $items[] = l(t('Delete'), 'mailchimp-campaign/' . $cid . '/delete/' . drupal_get_token('mailchimp_campaign'));
+    $items[] = l(t('Delete'), 'mailchimp-campaign/' . $cid . '/delete/' . drupal_get_token('mailchimp_campaign'), $destination);
   }
-  $items[] = l(t('Update'), 'mailchimp-campaign/' . $cid . '/update/' . drupal_get_token('mailchimp_campaign'));
+  $items[] = l(t('Update'), 'mailchimp-campaign/' . $cid . '/update/' . drupal_get_token('mailchimp_campaign', $destination));
   if ($data['status'] == 'save') {
-    $items[] = l(t('Send'), 'mailchimp-campaign/' . $cid . '/send/' . drupal_get_token('mailchimp_campaign'));
+    $items[] = l(t('Send'), 'mailchimp-campaign/' . $cid . '/send/' . drupal_get_token('mailchimp_campaign', $destination));
   }
 
   return theme('item_list', array('items' => $items));
