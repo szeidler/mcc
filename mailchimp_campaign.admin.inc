@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Administration pages for mailchimp_campaign module.
+ */
 
 /**
  * Returns sitewide campaign settings form.

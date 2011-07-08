@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Entity API hooks for mailchimp_campaign module.
+ */
 
 /**
  * Implements hook_entity_info().

@@ -400,7 +400,7 @@ function mailchimp_campaign_delete_form($form, &$form_state) {
     '#default_value' => 'db',
   );
 
-  return confirm_form($form, t('Are you sure you want to delete this campaign: %id', array('%id' => $campaign->data['title'])), 'node/' . $campaign->nid. '/mailchimp-campaigns');
+  return confirm_form($form, t('Are you sure you want to delete this campaign: %id', array('%id' => $campaign->data['title'])), 'node/' . $campaign->nid . '/mailchimp-campaigns');
 }
 
 /**
@@ -531,7 +531,7 @@ function mailchimp_campaign_send($cid) {
 
     // Log action, and notify the user.
     $message = 'MailChimp campaign was sent.';
-    drupal_set_message($message);
+    drupal_set_message(t($message));
     watchdog('mailchimp_campaign', $message);
   }
 }
@@ -596,10 +596,10 @@ function _mailchimp_campaign_mcapi_error_message($mcapi, $message, $variables = 
   $mcapiErrorMessage = 'MailChimp error code: %errorCode, MailChimp error message: %errorMessage.';
   $mcapiErrorVariables = array('%errorCode' => $mcapi->errorCode, '%errorMessage' => $mcapi->errorMessage);
 
-  $human = t($message, $variables)  . ' ' . t($mcapiErrorMessage, $mcapiErrorVariables);
+  $human = t($message, $variables) . ' ' . t($mcapiErrorMessage, $mcapiErrorVariables);
   drupal_set_message($human, 'error');
 
-  $watchdog = $message  . ' ' . $mcapiErrorMessage;
+  $watchdog = $message . ' ' . $mcapiErrorMessage;
   $variables = $variables + $mcapiErrorVariables;
   watchdog('mailchimp_campaign', $watchdog, $variables, WATCHDOG_ERROR);
 }

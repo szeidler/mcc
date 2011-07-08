@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Form and form validation for campaign settings.
+ */
 
 /**
  * Define constants for MAilChimp template settings.
@@ -69,28 +73,28 @@ function mailchimp_campaign_settings_form_validate($form, &$form_state) {
   if ($values['from_email'] == '') {
     $form_state['values']['mailchimp_campaign']['from_email'] = $defaults ? $defaults['from_email'] : variable_get('site_mail', FALSE);
   }
-  else if (!valid_email_address($values['from_email'])) {
+  elseif (!valid_email_address($values['from_email'])) {
     form_set_error('mailchimp_campaign][from_email', t('From email is not valid.'));
   }
 
   if ($values['template_id'] == '') {
     $form_state['values']['mailchimp_campaign']['template_id'] = $defaults ? $defaults['template_id'] : MAILCHIMP_CAMPAIGN_DEFAULT_TEMPLATE;
   }
-  else if (!is_numeric($values['template_id'])) {
+  elseif (!is_numeric($values['template_id'])) {
     form_set_error('mailchimp_campaign][template_id', t('Template ID must be numeric.'));
   }
 
   if ($values['title_section'] == '') {
     $form_state['values']['mailchimp_campaign']['title_section'] = $defaults ? $defaults['title_section'] : MAILCHIMP_CAMPAIGN_DEFAULT_TITLE_SECTION;
   }
-  else if (!preg_match('/^[a-zA-Z0-9_]*$/', $values['title_section'])) {
+  elseif (!preg_match('/^[a-zA-Z0-9_]*$/', $values['title_section'])) {
     form_set_error('mailchimp_campaign][title_section', t('Not valid title section.'));
   }
 
   if ($values['body_section'] == '') {
     $form_state['values']['mailchimp_campaign']['body_section'] = $defaults ? $defaults['body_section'] : MAILCHIMP_CAMPAIGN_DEFAULT_BODY_SECTION;
   }
-  else if (!preg_match('/^[a-zA-Z0-9_]*$/', $values['body_section'])) {
+  elseif (!preg_match('/^[a-zA-Z0-9_]*$/', $values['body_section'])) {
     form_set_error('mailchimp_campaign][body_section', t('Not valid body section.'));
   }
 }

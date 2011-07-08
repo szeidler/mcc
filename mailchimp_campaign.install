@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Install hooks form mailchimp_campaign module.
+ */
 
 /**
  * Implements hook_schema().
