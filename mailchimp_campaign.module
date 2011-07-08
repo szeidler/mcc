@@ -220,14 +220,21 @@ function mailchimp_campaign_entity_info_alter(&$entity_info) {
 function mailchimp_campaign_node_campaigns_page($node) {
   $node_campaigns = mailchimp_campaign_load_by_nid($node->nid);
 
-  $content['title'] = array(
-    '#markup' => '<h2>' . t('MailChimp campaigns for %title', array('%title' => $node->title)) . '</h2>',
-  );
+  if ($node_campaigns) {
+    $content['title'] = array(
+      '#markup' => t('MailChimp campaigns for %title', array('%title' => $node->title)),
+      '#prefix' => '<h2>',
+      '#suffix' => '</h3>',
+    );
 
-  $content['campaign_list'] = array(
-    '#theme' => 'mailchimp_campaign_node_campaigns_list',
-    '#node_campaigns' => $node_campaigns,
-  );
+    $content['campaign_list'] = array(
+      '#theme' => 'mailchimp_campaign_node_campaigns_list',
+      '#node_campaigns' => $node_campaigns,
+    );
+  }
+  else {
+    $content = '';
+  }
 
   return $content;
 }
@@ -287,7 +294,6 @@ function theme_mailchimp_campaign_actions($variables) {
   $cid = $variables['campaign']->cid;
   $nid = $variables['campaign']->nid;
   $destination = array('query' => array('destination' => 'node/' . $nid . '/mailchimp-campaigns'));
-  dpm($variables);
 
   $items = array();
   if (user_access('administer mailchimp')) {

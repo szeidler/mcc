@@ -59,10 +59,15 @@ function mailchimp_campaign_load_by_nid($nid, $vid = FALSE) {
   $entities = $entities->propertyOrderBy('update_time', 'DESC')
     ->execute();
 
-  foreach ($entities['mailchimp_campaign'] as $entity) {
-    $campaign_ids[] = $entity->cid;
+  if ($entities) {
+    foreach ($entities['mailchimp_campaign'] as $entity) {
+      $campaign_ids[] = $entity->cid;
+    }
+    return mailchimp_campaign_load_multiple($campaign_ids);
   }
-  return mailchimp_campaign_load_multiple($campaign_ids);
+  else {
+    return FALSE;
+  }
 }
 
 /**
