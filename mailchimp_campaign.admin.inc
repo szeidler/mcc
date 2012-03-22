@@ -17,7 +17,7 @@ function mailchimp_campaign_admin_form($form, &$form_state) {
     '#tree' => TRUE,
     '#description' => t('This setting are the defaults for every node types. Leaving blank this filds will reset the hardcoded MailChimp defaults.'),
   );
-  mailchimp_campaign_settings_form(&$form, $defaults);
+  mailchimp_campaign_settings_form($form, $defaults);
   $form['#validate'][] = 'mailchimp_campaign_settings_form_validate';
 
   return system_settings_form($form);

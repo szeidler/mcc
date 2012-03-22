@@ -159,7 +159,7 @@ function mailchimp_campaign_form_node_type_form_alter(&$form, $form_state) {
     '#title' => t('Enable MailChimp campaigns'),
     '#default_value' => $defaults ? $defaults['enabled'] : FALSE,
   );
-  mailchimp_campaign_settings_form(&$form, $defaults);
+  mailchimp_campaign_settings_form($form, $defaults);
   $form['mailchimp_campaign']['list_id']['#required'] = FALSE;
   // Hide options if MailChimp Campaigns is not enabled for node type.
   $states = array(
@@ -193,7 +193,7 @@ function mailchimp_campaign_form_node_type_form_validate($form, &$form_state) {
   if ($values['enabled'] && !$values['list_id']) {
     form_set_error('mailchimp_campaign][list_id', t('List field is required, if MailChimp campaigns are enabled.'));
   }
-  mailchimp_campaign_settings_form_validate($form, &$form_state);
+  mailchimp_campaign_settings_form_validate($form, $form_state);
 }
 
 /**
@@ -347,7 +347,7 @@ function mailchimp_campaign_create_form($form, &$form_state) {
     '#required' => TRUE,
   );
   if (user_access('administer mailchimp')) {
-    mailchimp_campaign_settings_form(&$form, $defaults);
+    mailchimp_campaign_settings_form($form, $defaults);
   }
   $form['mailchimp_campaign']['create'] = array(
     '#type' => 'submit',
@@ -365,7 +365,7 @@ function mailchimp_campaign_create_form_validate($form, &$form_state) {
   $node = $form_state['build_info']['args'][0];
   $form_state['defaults'] = variable_get('mailchimp_campaign_node_type_settings_' . $node->type, FALSE);
 
-  mailchimp_campaign_settings_form_validate($form, &$form_state);
+  mailchimp_campaign_settings_form_validate($form, $form_state);
 }
 
 /**
