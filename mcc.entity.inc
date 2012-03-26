@@ -1,19 +1,19 @@
 <?php
 /**
  * @file
- * Entity API hooks for mailchimp_campaign module.
+ * Entity API hooks for mcc module.
  */
 
 /**
  * Implements hook_entity_info().
  */
-function mailchimp_campaign_entity_info() {
+function mcc_entity_info() {
   $return = array(
-    'mailchimp_campaign' => array(
+    'mcc' => array(
       'label' => t('MailChimp Campaigns'),
       'controller class' => 'EntityAPIController',
-      'base table' => 'mailchimp_campaign_node_campaigns',
-      'uri callback' => 'mailchimp_campaign_uri',
+      'base table' => 'mcc_node_campaigns',
+      'uri callback' => 'mcc_uri',
       'fieldable' => FALSE,
       'entity keys' => array(
         'id' => 'cid',
@@ -26,34 +26,34 @@ function mailchimp_campaign_entity_info() {
 /**
  * Saves a campaign.
  */
-function mailchimp_campaign_save($campaign) {
-  return entity_get_controller('mailchimp_campaign')->save($campaign);
+function mcc_save($campaign) {
+  return entity_get_controller('mcc')->save($campaign);
 }
 
 /**
  * Load a campaign by ID.
  */
-function mailchimp_campaign_load($cid) {
-  $campaign = mailchimp_campaign_load_multiple(array($cid));
+function mcc_load($cid) {
+  $campaign = mcc_load_multiple(array($cid));
   return $campaign ? $campaign[$cid] : FALSE;
 }
 
 /**
  * Loads multiple campaigns.
  */
-function mailchimp_campaign_load_multiple($campaign_ids = array(), $conditions = array(), $reset = FALSE) {
+function mcc_load_multiple($campaign_ids = array(), $conditions = array(), $reset = FALSE) {
   if (empty($campaign_ids)) {
     $campaign_ids = FALSE;
   }
-  return entity_load('mailchimp_campaign', $campaign_ids, $conditions, $reset);
+  return entity_load('mcc', $campaign_ids, $conditions, $reset);
 }
 
 /**
  * Loads campaigns attached to specific nodes.
  */
-function mailchimp_campaign_load_by_nid($nid, $vid = FALSE) {
+function mcc_load_by_nid($nid, $vid = FALSE) {
   $query = new EntityFieldQuery();
-  $entities = $query->entityCondition('entity_type', 'mailchimp_campaign')
+  $entities = $query->entityCondition('entity_type', 'mcc')
     ->propertyCondition('nid', $nid);
 
   if ($vid) {
@@ -64,10 +64,10 @@ function mailchimp_campaign_load_by_nid($nid, $vid = FALSE) {
     ->execute();
 
   if ($entities) {
-    foreach ($entities['mailchimp_campaign'] as $entity) {
+    foreach ($entities['mcc'] as $entity) {
       $campaign_ids[] = $entity->cid;
     }
-    return mailchimp_campaign_load_multiple($campaign_ids);
+    return mcc_load_multiple($campaign_ids);
   }
   else {
     return FALSE;
@@ -77,13 +77,13 @@ function mailchimp_campaign_load_by_nid($nid, $vid = FALSE) {
 /**
  * Delete a campaign.
  */
-function mailchimp_campaign_delete($cid) {
-  return mailchimp_campaign_delete_multiple(array($cid));
+function mcc_delete($cid) {
+  return mcc_delete_multiple(array($cid));
 }
 
 /**
  * Delete multiple campaigns.
  */
-function mailchimp_campaign_delete_multiple($campaign_ids) {
-  return entity_get_controller('mailchimp_campaign')->delete($campaign_ids);
+function mcc_delete_multiple($campaign_ids) {
+  return entity_get_controller('mcc')->delete($campaign_ids);
 }

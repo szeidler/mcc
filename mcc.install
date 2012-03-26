@@ -1,14 +1,14 @@
 <?php
 /**
  * @file
- * Install hooks form mailchimp_campaign module.
+ * Install hooks form mcc module.
  */
 
 /**
  * Implements hook_schema().
  */
-function mailchimp_campaign_schema() {
-  $schema['mailchimp_campaign_node_campaigns'] = array(
+function mcc_schema() {
+  $schema['mcc_node_campaigns'] = array(
     'description' => 'MailChimp campaigns, created from nodes.',
     'fields' => array(
       'nid' => array(
@@ -54,8 +54,8 @@ function mailchimp_campaign_schema() {
 }
 
 /**
- * Add index for nid/vid to 'mailchimp_campaign_node_campaigns' table.
+ * Add index for nid/vid to 'mcc_node_campaigns' table.
  */
-function mailchimp_campaign_update_7200() {
-  db_add_index('mailchimp_campaign_node_campaigns', 'node_campaigns', array('nid', 'vid'));
+function mcc_update_7200() {
+  db_add_index('mcc_node_campaigns', 'node_campaigns', array('nid', 'vid'));
 }

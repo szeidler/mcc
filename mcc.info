@@ -1,4 +1,4 @@
-name = MailChimp campaign
+name = MailChimp campaigns
 description = Create and send MailChimp campaigns from nodes.
 package = MailChimp
 core = 7.x
@@ -7,8 +7,8 @@ dependencies[] = mailchimp
 dependencies[] = mailchimp_lists
 dependencies[] = entity
 
-files[] = mailchimp_campaign.install
-files[] = mailchimp_campaign.module
-files[] = mailchimp_campaign.admin.inc
-files[] = mailchimp_campaign.settings.inc
-files[] = mailchimp_campaign.entity.inc
+files[] = mcc.install
+files[] = mcc.module
+files[] = mcc.admin.inc
+files[] = mcc.settings.inc
+files[] = mcc.entity.inc
