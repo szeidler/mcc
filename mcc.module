@@ -371,10 +371,11 @@ function mcc_create_form_validate($form, &$form_state) {
 /**
  * Create MailChimp campaign on form submission.
  */
-function mcc_create_form_submit($form, $form_state) {
+function mcc_create_form_submit($form, &$form_state) {
   if (isset($form_state['build_info']['args'][0]->nid)) {
     $node = $form_state['build_info']['args'][0];
     mcc_create($node, $form_state['values']['mcc']);
+    $form_state['redirect'] = 'node/' . $node->nid . '/mailchimp-campaigns';
   }
 }
 
