@@ -52,6 +52,14 @@ function mcc_menu() {
     'access arguments' => array(3, 'send mailchimp campaign'),
     'type' => MENU_CALLBACK,
   );
+  $items['mailchimp-campaign/%mcc/send-test/%'] = array(
+    'title' => 'Send campaign test',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mcc_send_test_campaign_form', 1),
+    'access callback' => 'mcc_menu_operations_access',
+    'access arguments' => array(3, 'send mailchimp campaign'),
+    'type' => MENU_CALLBACK,
+  );
   $items['mailchimp-campaign/%mcc/send/%'] = array(
     'title' => 'Send',
     'page callback' => 'mcc_menu_operations',
@@ -104,6 +112,9 @@ function mcc_menu_operations($campaign, $op) {
   switch ($op) {
     case 'update':
         mcc_update_campaign($campaign->cid);
+      break;
+    case 'send-test':
+        mcc_send_test_campaign($campaign);
       break;
     case 'send':
         mcc_send($campaign->cid);
@@ -174,6 +185,7 @@ function mcc_form_node_type_form_alter(&$form, $form_state) {
   $form['mcc']['list_id'] += $states;
   $form['mcc']['from_name'] += $states;
   $form['mcc']['from_email'] += $states;
+  $form['mcc']['test_recipient_email'] += $states;
   $form['mcc']['template_id'] += $states;
   $form['mcc']['title_section'] += $states;
   $form['mcc']['body_section'] += $states;
@@ -300,6 +312,7 @@ function theme_mcc_actions($variables) {
     $items[] = l(t('Delete'), 'mailchimp-campaign/' . $cid . '/delete/' . drupal_get_token('mcc'), $destination);
   }
   $items[] = l(t('Update'), 'mailchimp-campaign/' . $cid . '/update/' . drupal_get_token('mcc', $destination));
+  $items[] = l(t('Send test campaign'), 'mailchimp-campaign/' . $cid . '/send-test/' . drupal_get_token('mcc', $destination));
   if ($data['status'] == 'save') {
     $items[] = l(t('Send'), 'mailchimp-campaign/' . $cid . '/send/' . drupal_get_token('mcc', $destination));
   }
@@ -348,6 +361,8 @@ function mcc_create_form($form, &$form_state) {
   );
   if (user_access('administer mailchimp')) {
     mcc_settings_form($form, $defaults);
+    // Can't set up test recipient for a campaign.
+    $form['mcc']['test_recipient_email']['#access'] = 0;
   }
   $form['mcc']['create'] = array(
     '#type' => 'submit',
@@ -534,6 +549,69 @@ function mcc_send($cid) {
     $message = 'MailChimp campaign was sent.';
     drupal_set_message(t($message));
     watchdog('mcc', $message);
+  }
+}
+
+/**
+ * Send MailChimp campaign test email - confirm form
+ */
+function mcc_send_test_campaign_form($form, &$form_state) {
+  $campaign = $form_state['build_info']['args'][0];
+
+  $form['info'] = array(
+    '#markup' => t('Campaign ID: %cid', array('%cid' => $campaign->cid)),
+    '#suffix' => '<br />',
+  );
+
+  return confirm_form(
+    $form,
+    t('Are you sure you want to send test from this campaign: %id', array('%id' => $campaign->data['title'])),
+    'node/' . $campaign->nid . '/mailchimp-campaigns',
+    t('You allowed to send out as many test emails from your campaign as you want.'),
+    t('Send campaign test')
+  );
+}
+
+/**
+ * Send test campaign
+ */
+function mcc_send_test_campaign_form_submit($form, &$form_state) {
+  $campaign = $form_state['build_info']['args'][0];
+
+  $campaign_node = node_load($campaign->nid);
+  if ($campaign_node) {
+    $type = $campaign_node->type;
+    $var_name = 'mcc_node_type_settings_' . $type;
+
+    $campaign_settings = variable_get($var_name, array());
+    if (empty($campaign_settings['test_recipient_email'])) {
+      $campaign_settings = variable_get('mcc', array());
+    }
+
+    if (!empty($campaign_settings['test_recipient_email'])) {
+      $mcapi = mailchimp_get_api_object();
+
+      $emails = array($campaign_settings['test_recipient_email']);
+      // Sends test campaign.
+      $sent = $mcapi->campaignSendTest($campaign->cid, $emails);
+
+      if ($mcapi->errorCode) {
+        // Display and log error, if any.
+        $message = 'MailChimp error. The test campaign was not sent.';
+        _mcc_mcapi_error_message($mcapi, $message);
+      }
+      else {
+        // Log action, and notify the user.
+        $message = 'MailChimp test campaign was sent.';
+        drupal_set_message(t($message));
+        watchdog('mcc', $message);
+      }
+    }
+
+    $form_state['redirect'] = 'node/' . $campaign_node->nid . '/mailchimp-campaigns';
+  }
+  else {
+    $form_state['redirect'] = '<front>';
   }
 }
 

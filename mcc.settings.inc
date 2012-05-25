@@ -34,6 +34,12 @@ function mcc_settings_form(&$form, $defaults) {
     '#title' => t('From email'),
     '#default_value' => $defaults ? $defaults['from_email'] : variable_get('site_mail', FALSE),
   );
+  $form['mcc']['test_recipient_email'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Test email address'),
+    '#description' => t('Email address for campaign testing'),
+    '#default_value' => $defaults ? $defaults['test_recipient_email'] : variable_get('site_mail', FALSE),
+  );
   $form['mcc']['template_id'] = array(
     '#type' => 'textfield',
     '#title' => t('Template ID'),
@@ -75,6 +81,13 @@ function mcc_settings_form_validate($form, &$form_state) {
   }
   elseif (!valid_email_address($values['from_email'])) {
     form_set_error('mcc][from_email', t('From email is not valid.'));
+  }
+
+  if ($values['test_recipient_email'] == '') {
+    $form_state['values']['mcc']['test_recipient_email'] = $defaults ? $defaults['test_recipient_email'] : variable_get('site_mail', FALSE);
+  }
+  elseif (!valid_email_address($values['test_recipient_email'])) {
+    form_set_error('mcc][test_recipient_email', t('Test email address is not valid.'));
   }
 
   if ($values['template_id'] == '') {
