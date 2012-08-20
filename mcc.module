@@ -711,15 +711,12 @@ function _mcc_list_name($list_id) {
  * Change the relative URLs to absolute ones in the message.
  */
 function _mcc_convert_url($text) {
-  global $base_url;
   $matches = array();
-  preg_match_all('/<(a|img).*?(href|src)="(.*?)"/', $text, $matches);
+  preg_match_all('/<(a|img).*?(href|src)="\/(.*?)"/', $text, $matches);
   foreach ($matches[3] as $key => $url) {
-    if ($url[0] == '/') {
-      $new_url = $base_url . $url;
-      $new_match = str_replace($url, $new_url, $matches[0][$key]);
-      $text = str_replace($matches[0][$key], $new_match, $text);
-    }
+    $new_url = url($url, array('absolute' => TRUE));
+    $new_match = str_replace('/' . $url, $new_url, $matches[0][$key]);
+    $text = str_replace($matches[0][$key], $new_match, $text);
   }
 
   return $text;
@@ -729,9 +726,17 @@ function _mcc_convert_url($text) {
  * Returns campaign content of a node.
  */
 function _mcc_body($node) {
+  global $base_url;
+  // Sets the $base_path to an absolute URL, so allways renders absolute URLs
+  // with url().
+  $base_path_original = $GLOBALS['base_path'];
+  $GLOBALS['base_path'] = $base_url . '/';
   $render = node_view($node, 'mcc');
   $content = drupal_render($render);
-  return _mcc_convert_url($content);
+  $content = _mcc_convert_url($content);
+  $GLOBALS['base_path'] = $base_path_original;
+
+  return $content;
 }
 
 /**
