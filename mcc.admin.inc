@@ -13,9 +13,9 @@ function mcc_admin_form($form, &$form_state) {
   $form = array();
   $form['mcc'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Sitewide default MailChimp campaign settings'),
+    '#title' => t('Sitewide default MailChimp Node Campaign settings'),
     '#tree' => TRUE,
-    '#description' => t('This setting are the defaults for every node types. Leaving blank this filds will reset the hardcoded MailChimp defaults.'),
+    '#description' => t('These settings are the defaults for all node types. Leaving these fields blank will reset the hardcoded MailChimp defaults.'),
   );
   mcc_settings_form($form, $defaults);
   $form['#validate'][] = 'mcc_settings_form_validate';
