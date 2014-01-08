@@ -18,8 +18,8 @@ function mcc_permission() {
  * Implements hook_menu().
  */
 function mcc_menu() {
-  $items['admin/config/services/mailchimp/campaigns'] = array(
-    'title' => 'Campaign settings',
+  $items['admin/config/services/mailchimp/node-campaigns'] = array(
+    'title' => 'Node Campaigns',
     'description' => 'Manage sitewide default MailChimp Campaigns settings.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('mcc_admin_form'),
@@ -28,7 +28,7 @@ function mcc_menu() {
     'file' => 'mcc.admin.inc',
     'weight' => 10
   );
-  $items['node/%node/mailchimp-campaigns'] = array(
+  $items['node/%node/mailchimp-node-campaigns'] = array(
     'title' => 'MailChimp campaigns',
     'page callback' => 'mcc_node_campaigns_page',
     'page arguments' => array(1),
@@ -36,7 +36,7 @@ function mcc_menu() {
     'access arguments' => array(1, 'send mailchimp campaign'),
     'type' => MENU_LOCAL_TASK,
   );
-  $items['node/%node/mailchimp-campaigns/create'] = array(
+  $items['node/%node/mailchimp-node-campaigns/create'] = array(
     'title' => 'Create new campaign',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('mcc_create_form', 1),
@@ -44,7 +44,7 @@ function mcc_menu() {
     'access arguments' => array(1, 'send mailchimp campaign'),
     'type' => MENU_LOCAL_ACTION,
   );
-  $items['mailchimp-campaign/%mcc/update/%'] = array(
+  $items['mailchimp-node-campaign/%mcc/update/%'] = array(
     'title' => 'Update',
     'page callback' => 'mcc_menu_operations',
     'page arguments' => array(1, 2),
@@ -52,7 +52,7 @@ function mcc_menu() {
     'access arguments' => array(3, 'send mailchimp campaign'),
     'type' => MENU_CALLBACK,
   );
-  $items['mailchimp-campaign/%mcc/send-test/%'] = array(
+  $items['mailchimp-node-campaign/%mcc/send-test/%'] = array(
     'title' => 'Send campaign test',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('mcc_send_test_campaign_form', 1),
@@ -60,7 +60,7 @@ function mcc_menu() {
     'access arguments' => array(3, 'send mailchimp campaign'),
     'type' => MENU_CALLBACK,
   );
-  $items['mailchimp-campaign/%mcc/send/%'] = array(
+  $items['mailchimp-node-campaign/%mcc/send/%'] = array(
     'title' => 'Send',
     'page callback' => 'mcc_menu_operations',
     'page arguments' => array(1, 2),
@@ -68,7 +68,7 @@ function mcc_menu() {
     'access arguments' => array(3, 'send mailchimp campaign'),
     'type' => MENU_CALLBACK,
   );
-  $items['mailchimp-campaign/%mcc/delete/%'] = array(
+  $items['mailchimp-node-campaign/%mcc/delete/%'] = array(
     'title' => 'Delete',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('mcc_delete_form', 1),

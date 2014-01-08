@@ -1,4 +1,4 @@
-name = MailChimp campaigns
+name = MailChimp Node Campaigns
 description = Create and send MailChimp campaigns from nodes.
 package = MailChimp
 core = 7.x
