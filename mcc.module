@@ -461,20 +461,15 @@ function mcc_delete_form_submit($form, &$form_state) {
  * Create MailChimp campaign from a node.
  */
 function mcc_create($node, $settings) {
-  $mcapi = mailchimp_get_api_object();
-  $options = array(
-    'list_id' => $settings['list_id'],
-    'subject' => $settings['subject'],
-    'from_email' => $settings['from_email'],
-    'from_name' => $settings['from_name'],
+  $mcapi = mailchimp_get_api_object('MailchimpCampaigns');
+  $options = (object) array(
+    'subject_line' => $settings['subject'],
     'title' => $settings['campaign_title'],
-    'template_id' => $settings['template_id'],
-    'generate_text' => TRUE,
-    'tracking' => array(
-      'opens' => TRUE,
-      'html_clicks' => TRUE,
-      'text_clicks' => TRUE,
-    ),
+    'from_name' => $settings['from_name'],
+    'reply_to' => $settings['from_email'],
+  );
+  $recipients = (object) array(
+    'list_id' => $settings['list_id'],
   );
   $body = _mcc_body($node);
   $title = l($node->title, 'node/' . $node->nid, array('absolute' => TRUE));
@@ -487,8 +482,12 @@ function mcc_create($node, $settings) {
     $content['html_' . $settings['body_section']] = $body;
   }
 
+  $parameters = array();
+  $parameters['html'] = $content;
+  $parameters['template'] = mailchimp_campaign_get_template($settings['template_id']);
   // Create campaign on MailChimp (Only regular campaigns are supported yet).
-  $cid = $mcapi->campaignCreate('regular', $options, $content);
+  $cid = $mcapi->addCampaign(\Mailchimp\MailchimpCampaigns::CAMPAIGN_TYPE_REGULAR, $recipients, $options);
+  $mcapi->setCampaignContent($cid->id, $parameters);
 
   if ($mcapi->errorCode) {
     // Display and log error, if any.
@@ -512,6 +511,7 @@ function mcc_create($node, $settings) {
     watchdog('mcc', $message, $variables);
 
     // Request all campaign datas from MailChimp.
+    // TODO Update to 3.0.
     mcc_update_campaign($cid, TRUE);
   }
 }
@@ -526,6 +526,7 @@ function mcc_update_campaign($cid, $silent = FALSE) {
   $campaign->update_time = REQUEST_TIME;
 
   // Request all datas from the campaign.
+  // TODO: Update for 3.0.
   $data = $mcapi->campaigns(array('campaign_id' => $cid));
 
   if ($mcapi->errorCode) {
@@ -618,6 +619,7 @@ function mcc_send_test_campaign_form_submit($form, &$form_state) {
 
       $emails = array($campaign_settings['test_recipient_email']);
       // Sends test campaign.
+      // TODO: Update for 3.0
       $sent = $mcapi->campaignSendTest($campaign->cid, $emails);
 
       if ($mcapi->errorCode) {
@@ -647,6 +649,7 @@ function mcc_delete_campaign($cid) {
   $mcapi = mailchimp_get_api_object();
 
   // Delete campaign from MailChimp.
+  // TODO: Update for 3.0.
   $delete = $mcapi->campaignDelete($cid);
 
   if ($mcapi->errorCode) {
