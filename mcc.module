@@ -718,7 +718,7 @@ function _mcc_lists_options() {
 
   $options = array('' => t('-- Select --'));
   foreach ($lists as $list) {
-    $options[$list['id']] = $list['name'];
+    $options[$list->id] = $list->name;
   }
 
   return $options;
