@@ -116,15 +116,15 @@ function mcc_menu_operations_access($token, $permission) {
 function mcc_menu_operations($campaign, $op) {
   switch ($op) {
     case 'update':
-        mcc_update_campaign($campaign->cid);
+      mcc_update_campaign($campaign->cid);
       break;
 
     case 'send-test':
-        mcc_send_test_campaign($campaign);
+      mcc_send_test_campaign($campaign);
       break;
 
     case 'send':
-        mcc_send($campaign->cid);
+      mcc_send($campaign->cid);
       break;
   }
 
