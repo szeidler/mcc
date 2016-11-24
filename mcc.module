@@ -473,20 +473,22 @@ function mcc_create($node, $settings) {
   );
   $body = _mcc_body($node);
   $title = l($node->title, 'node/' . $node->nid, array('absolute' => TRUE));
-  $content = array();
   if ($settings['title_section'] == $settings['body_section']) {
-    $content['html_' . $settings['body_section']] = '<h1>' . $title . '</h1>' . $body;
+    $content = '<h1>' . $title . '</h1>' . $body;
   }
   else {
-    $content['html_' . $settings['title_section']] = $title;
-    $content['html_' . $settings['body_section']] = $body;
+    $content = $title;
+    $content .= $body;
   }
-
+  settype($settings['template_id'], 'int');
   $parameters = array();
   $parameters['html'] = $content;
-  $parameters['template'] = mailchimp_campaign_get_template($settings['template_id']);
+  $parameters['template'] = (object) array(
+    'id' => $settings['template_id'],
+  );
   // Create campaign on MailChimp (Only regular campaigns are supported yet).
-  $cid = $mcapi->addCampaign(\Mailchimp\MailchimpCampaigns::CAMPAIGN_TYPE_REGULAR, $recipients, $options);
+  $cid = $mcapi->addCampaign('regular', $recipients, $options);
+
   $mcapi->setCampaignContent($cid->id, $parameters);
 
   if ($mcapi->errorCode) {
@@ -619,7 +621,7 @@ function mcc_send_test_campaign_form_submit($form, &$form_state) {
 
       $emails = array($campaign_settings['test_recipient_email']);
       // Sends test campaign.
-      // TODO: Update for 3.0
+      // TODO: Update for 3.0.
       $sent = $mcapi->campaignSendTest($campaign->cid, $emails);
 
       if ($mcapi->errorCode) {
