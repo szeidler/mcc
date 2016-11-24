@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * Entity API hooks for mcc module.

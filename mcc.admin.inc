@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * Administration pages for mcc module.
