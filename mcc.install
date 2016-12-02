@@ -27,7 +27,8 @@ function mcc_schema() {
       ),
       'cid' => array(
         'description' => 'MailChimp campaign ID.',
-        'type' => 'varchar', 'length' => 16,
+        'type' => 'varchar',
+        'length' => 16,
         'not null' => TRUE,
         'default' => 0,
       ),

@@ -3,7 +3,7 @@ description = Create and send MailChimp campaigns from nodes.
 package = MailChimp
 core = 7.x
 
-dependencies[] = mailchimp
+dependencies[] = mailchimp (>=7.x-4.7)
 dependencies[] = mailchimp_lists
 dependencies[] = entity
 
