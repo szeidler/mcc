@@ -59,6 +59,31 @@ function mcc_settings_form(&$form, $defaults) {
     '#default_value' => $defaults ? $defaults['body_section'] : MCC_DEFAULT_BODY_SECTION,
     '#description' => t('Body section in the template. Leave blank to reset to defaults.'),
   );
+  $form['mcc']['use_conversation'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Use MailChimp Conversation feature to manage out-of-office replies'),
+    '#default_value' => $defaults ? $defaults['use_conversation'] : FALSE,
+  );
+  $form['mcc']['authenticate'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Authenticate campaign'),
+    '#default_value' => $defaults ? $defaults['authenticate'] : FALSE,
+  );
+  $form['mcc']['auto_footer'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Automatically append MailChimp’s default footer to the campaign'),
+    '#default_value' => $defaults ? $defaults['auto_footer'] : FALSE,
+  );
+  $form['mcc']['inline_css'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Automatically inline the CSS included with the campaign content'),
+    '#default_value' => $defaults ? $defaults['inline_css'] : FALSE,
+  );
+  $form['mcc']['auto_tweet'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Automatically tweet a link to the campaign archive page when the campaign is sent'),
+    '#default_value' => $defaults ? $defaults['auto_tweet'] : FALSE,
+  );
 }
 
 /**

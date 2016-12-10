@@ -385,6 +385,31 @@ function mcc_create_form($form, &$form_state) {
     // Can't set up test recipient for a campaign.
     $form['mcc']['test_recipient_email']['#access'] = 0;
   }
+  $form['mcc']['use_conversation'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Use Conversation'),
+    '#default_value' => $defaults ? $defaults['use_conversation'] : FALSE,
+  );
+  $form['mcc']['authenticate'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Authenticate campaign'),
+    '#default_value' => $defaults ? $defaults['authenticate'] : FALSE,
+  );
+  $form['mcc']['auto_footer'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Automatically append MailChimp’s default footer to the campaign'),
+    '#default_value' => $defaults ? $defaults['auto_footer'] : FALSE,
+  );
+  $form['mcc']['inline_css'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Automatically inline the CSS included with the campaign content'),
+    '#default_value' => $defaults ? $defaults['inline_css'] : FALSE,
+  );
+  $form['mcc']['auto_tweet'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Automatically tweet a link to the campaign archive page when the campaign is sent'),
+    '#default_value' => $defaults ? $defaults['auto_tweet'] : FALSE,
+  );
   $form['mcc']['create'] = array(
     '#type' => 'submit',
     '#value' => t('Create new campaign from node'),
@@ -461,6 +486,11 @@ function mcc_create($node, $settings) {
     'title' => $settings['campaign_title'],
     'from_name' => $settings['from_name'],
     'reply_to' => $settings['from_email'],
+    'use_conversation' => $settings['use_conversation'],
+    'authenticate' => $settings['authenticate'],
+    'auto_footer' => $settings['auto_tweet'],
+    'inline_css' => $settings['inline_css'],
+    'auto_tweet' => $settings['auto_tweet'],
   );
   $recipients = (object) array(
     'list_id' => $settings['list_id'],
