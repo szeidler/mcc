@@ -486,11 +486,11 @@ function mcc_create($node, $settings) {
     'title' => $settings['campaign_title'],
     'from_name' => $settings['from_name'],
     'reply_to' => $settings['from_email'],
-    'use_conversation' => $settings['use_conversation'],
-    'authenticate' => $settings['authenticate'],
-    'auto_footer' => $settings['auto_tweet'],
-    'inline_css' => $settings['inline_css'],
-    'auto_tweet' => $settings['auto_tweet'],
+    'use_conversation' => filter_var($settings['use_conversation'], FILTER_VALIDATE_BOOLEAN),
+    'authenticate' => filter_var($settings['authenticate'], FILTER_VALIDATE_BOOLEAN),
+    'auto_footer' => filter_var($settings['auto_footer'], FILTER_VALIDATE_BOOLEAN),
+    'inline_css' => filter_var($settings['inline_css'], FILTER_VALIDATE_BOOLEAN),
+    'auto_tweet' => filter_var($settings['auto_tweet'], FILTER_VALIDATE_BOOLEAN),
   );
   $recipients = (object) array(
     'list_id' => $settings['list_id'],
