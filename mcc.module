@@ -387,7 +387,7 @@ function mcc_create_form($form, &$form_state) {
   }
   $form['mcc']['use_conversation'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Use Conversation'),
+    '#title' => t('Use MailChimp Conversation feature to manage out-of-office replies'),
     '#default_value' => $defaults ? $defaults['use_conversation'] : FALSE,
   );
   $form['mcc']['authenticate'] = array(
