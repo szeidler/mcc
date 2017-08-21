@@ -497,18 +497,26 @@ function mcc_create($node, $settings) {
   );
   $body = _mcc_body($node);
   $title = l($node->title, 'node/' . $node->nid, array('absolute' => TRUE));
-  if ($settings['title_section'] == $settings['body_section']) {
-    $content = '<h1>' . $title . '</h1>' . $body;
-  }
-  else {
-    $content = $body;
-  }
-  settype($settings['template_id'], 'int');
+
   $parameters = array();
-  $parameters['html'] = $content;
   $parameters['template'] = (object) array(
     'id' => $settings['template_id'],
   );
+
+  // Inject per section content, if template sections are used.
+  if (!empty($settings['body_section'])) {
+    if ($settings['title_section'] === $settings['body_section']) {
+      $parameters['template']->sections->{$settings['body_section']} = '<h1>' . $title . '</h1>' . $body;
+    }
+    else {
+      $parameters['template']->sections->{$settings['title_section']} = $title;
+      $parameters['template']->sections->{$settings['body_section']} = $body;
+    }
+  } else {
+    // Fallback to the generic HTML parameter, when no template sections are
+    // used.
+    $parameters['html'] = '<h1>' . $title . '</h1>' . $body;
+  }
   // Create campaign on MailChimp (Only regular campaigns are supported yet).
   $cid = $mcapi->addCampaign('regular', $recipients, $options);
 
