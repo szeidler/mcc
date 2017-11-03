@@ -500,7 +500,7 @@ function mcc_create($node, $settings) {
 
   $parameters = array();
   $parameters['template'] = (object) array(
-    'id' => $settings['template_id'],
+    'id' => (int) $settings['template_id'],
   );
 
   // Inject per section content, if template sections are used.
